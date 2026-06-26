@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
+using TiendaWeb.Areas.admin.repository;
+using TiendaWeb.Areas.admin.ViewModel;
 using TiendaWeb.Infrastructure.Data;
 using TiendaWeb.Infrastructure.repositories;
 using TiendaWeb.Infrastructure.service;
@@ -33,6 +35,10 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 // Dashboard Admin
 builder.Services.AddScoped<TiendaWeb.Areas.admin.service.IDashboardService,
                             TiendaWeb.Areas.admin.service.DashboardService>();
+
+builder.Services.AddScoped<IConfiguracionRepository, ConfiguracionRepository>();
+builder.Services.AddScoped<TiendaWeb.Areas.admin.service.IConfiguracionService,
+                            TiendaWeb.Areas.admin.service.ConfiguracionService>();
 
 // SERVICES
 builder.Services.AddSession(o => {

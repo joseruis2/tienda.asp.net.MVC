@@ -1,0 +1,180 @@
+﻿@model TiendaWeb.Areas.admin.ViewModel.ConfiguracionViewModel
+@{
+    Layout = "~/Areas/admin/Views/Shared/_LayoutAdmin.cshtml";
+    ViewData["Title"] = "Configuración del negocio";
+}
+
+<style>
+    .config-card  { border: none; border-radius: 14px; box-shadow: 0 1px 6px rgba(0,0,0,.07); }
+    .section-title { font-size: .7rem; font-weight: 700; letter-spacing: .08em;
+                     text-transform: uppercase; color: #64748b; margin-bottom: .75rem; }
+    .form-label   { font-size: .825rem; font-weight: 600; color: #374151; }
+    .form-control, .form-select { font-size: .875rem; background: #f8fafc; border-color: #e2e8f0; }
+    .form-control:focus, .form-select:focus {
+        border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,.12); background: #fff;
+    }
+</style>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show mb-4 py-2" role="alert">
+        <i class="bi bi-check-circle me-1"></i> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show mb-4 py-2" role="alert">
+        <i class="bi bi-x-circle me-1"></i> @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<form asp-action="Index" asp-controller="Configuracion" asp-area="admin" method="post">
+    @Html.AntiForgeryToken()
+    <input asp-for="ConfigId" type="hidden" />
+
+    <div class="row g-4">
+
+        <!-- ── Columna izquierda ── -->
+        <div class="col-lg-8">
+
+            <!-- Datos del negocio -->
+            <div class="card config-card mb-4">
+                <div class="card-body p-4">
+                    <p class="section-title"><i class="bi bi-shop me-1"></i>Datos del negocio</p>
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label asp-for="NombreNegocio" class="form-label"></label>
+                            <input asp-for="NombreNegocio" class="form-control" placeholder="Mi Tienda SAC" />
+                            <span asp-validation-for="NombreNegocio" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Ruc" class="form-label"></label>
+                            <input asp-for="Ruc" class="form-control" placeholder="20000000001" maxlength="11" />
+                            <span asp-validation-for="Ruc" class="text-danger small"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Direccion" class="form-label"></label>
+                            <input asp-for="Direccion" class="form-control" placeholder="Av. Principal 123" />
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Distrito" class="form-label"></label>
+                            <input asp-for="Distrito" class="form-control" placeholder="Lima" />
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Provincia" class="form-label"></label>
+                            <input asp-for="Provincia" class="form-control" placeholder="Lima" />
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Departamento" class="form-label"></label>
+                            <input asp-for="Departamento" class="form-control" placeholder="Lima" />
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Telefono" class="form-label"></label>
+                            <input asp-for="Telefono" class="form-control" placeholder="01-1234567" />
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Email" class="form-label"></label>
+                            <input asp-for="Email" class="form-control" placeholder="contacto@mitienda.com" />
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="MensajeTicket" class="form-label"></label>
+                            <textarea asp-for="MensajeTicket" class="form-control" rows="2"
+                                      placeholder="¡Gracias por su compra! Vuelva pronto."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Series de comprobantes -->
+            <div class="card config-card">
+                <div class="card-body p-4">
+                    <p class="section-title"><i class="bi bi-receipt me-1"></i>Series de comprobantes</p>
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label asp-for="SerieTicket" class="form-label"></label>
+                            <input asp-for="SerieTicket" class="form-control" maxlength="4" />
+                        </div>
+                        <div class="col-md-3">
+                            <label asp-for="SerieBoleta" class="form-label"></label>
+                            <input asp-for="SerieBoleta" class="form-control" maxlength="4" />
+                        </div>
+                        <div class="col-md-3">
+                            <label asp-for="SerieFactura" class="form-label"></label>
+                            <input asp-for="SerieFactura" class="form-control" maxlength="4" />
+                        </div>
+                        <div class="col-md-3">
+                            <label asp-for="SerieOrdenCompra" class="form-label"></label>
+                            <input asp-for="SerieOrdenCompra" class="form-control" maxlength="4" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Columna derecha ── -->
+        <div class="col-lg-4">
+
+            <!-- Moneda e IGV -->
+            <div class="card config-card mb-4">
+                <div class="card-body p-4">
+                    <p class="section-title"><i class="bi bi-cash me-1"></i>Moneda e IGV</p>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label asp-for="Moneda" class="form-label"></label>
+                            <select asp-for="Moneda" class="form-select">
+                                <option value="PEN">PEN — Sol</option>
+                                <option value="USD">USD — Dólar</option>
+                                <option value="EUR">EUR — Euro</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label asp-for="SimboloMoneda" class="form-label"></label>
+                            <input asp-for="SimboloMoneda" class="form-control" maxlength="5" />
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="IgvPorcentaje" class="form-label"></label>
+                            <div class="input-group">
+                                <input asp-for="IgvPorcentaje" class="form-control" type="number"
+                                       step="0.01" min="0" max="100" />
+                                <span class="input-group-text">%</span>
+                            </div>
+                            <span asp-validation-for="IgvPorcentaje" class="text-danger small"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Políticas -->
+            <div class="card config-card mb-4">
+                <div class="card-body p-4">
+                    <p class="section-title"><i class="bi bi-arrow-return-left me-1"></i>Políticas</p>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="DiasDevolucion" class="form-label"></label>
+                            <div class="input-group">
+                                <input asp-for="DiasDevolucion" class="form-control"
+                                       type="number" min="0" max="365" />
+                                <span class="input-group-text">días</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Guardar -->
+            <div class="d-grid">
+                <button type="submit" class="btn btn-primary fw-semibold py-2">
+                    <i class="bi bi-floppy me-1"></i> Guardar configuración
+                </button>
+            </div>
+        </div>
+
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

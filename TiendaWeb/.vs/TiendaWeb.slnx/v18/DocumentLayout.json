@@ -7,16 +7,44 @@
       "RelativeMoniker": "D:0:0:{C4BCAFC1-BCC3-5AAA-F131-B1384E53CB8F}|TiendaWeb\\TiendaWeb.csproj|solutionrelative:tiendaweb\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
+      "AbsoluteMoniker": "D:0:0:{C4BCAFC1-BCC3-5AAA-F131-B1384E53CB8F}|TiendaWeb\\TiendaWeb.csproj|c:\\users\\pcs\\downloads\\c#\\tiendaweb\\tiendaweb\\areas\\admin\\views\\configuracion\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{C4BCAFC1-BCC3-5AAA-F131-B1384E53CB8F}|TiendaWeb\\TiendaWeb.csproj|solutionrelative:tiendaweb\\areas\\admin\\views\\configuracion\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C4BCAFC1-BCC3-5AAA-F131-B1384E53CB8F}|TiendaWeb\\TiendaWeb.csproj|c:\\users\\pcs\\downloads\\c#\\tiendaweb\\tiendaweb\\areas\\admin\\controllers\\configuracioncontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C4BCAFC1-BCC3-5AAA-F131-B1384E53CB8F}|TiendaWeb\\TiendaWeb.csproj|solutionrelative:tiendaweb\\areas\\admin\\controllers\\configuracioncontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C4BCAFC1-BCC3-5AAA-F131-B1384E53CB8F}|TiendaWeb\\TiendaWeb.csproj|c:\\users\\pcs\\downloads\\c#\\tiendaweb\\tiendaweb\\areas\\admin\\service\\configuracionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C4BCAFC1-BCC3-5AAA-F131-B1384E53CB8F}|TiendaWeb\\TiendaWeb.csproj|solutionrelative:tiendaweb\\areas\\admin\\service\\configuracionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C4BCAFC1-BCC3-5AAA-F131-B1384E53CB8F}|TiendaWeb\\TiendaWeb.csproj|c:\\users\\pcs\\downloads\\c#\\tiendaweb\\tiendaweb\\areas\\admin\\service\\iconfiguracionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C4BCAFC1-BCC3-5AAA-F131-B1384E53CB8F}|TiendaWeb\\TiendaWeb.csproj|solutionrelative:tiendaweb\\areas\\admin\\service\\iconfiguracionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C4BCAFC1-BCC3-5AAA-F131-B1384E53CB8F}|TiendaWeb\\TiendaWeb.csproj|c:\\users\\pcs\\downloads\\c#\\tiendaweb\\tiendaweb\\areas\\admin\\repository\\configuracionrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C4BCAFC1-BCC3-5AAA-F131-B1384E53CB8F}|TiendaWeb\\TiendaWeb.csproj|solutionrelative:tiendaweb\\areas\\admin\\repository\\configuracionrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C4BCAFC1-BCC3-5AAA-F131-B1384E53CB8F}|TiendaWeb\\TiendaWeb.csproj|c:\\users\\pcs\\downloads\\c#\\tiendaweb\\tiendaweb\\areas\\admin\\viewmodel\\configuracionviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C4BCAFC1-BCC3-5AAA-F131-B1384E53CB8F}|TiendaWeb\\TiendaWeb.csproj|solutionrelative:tiendaweb\\areas\\admin\\viewmodel\\configuracionviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C4BCAFC1-BCC3-5AAA-F131-B1384E53CB8F}|TiendaWeb\\TiendaWeb.csproj|c:\\users\\pcs\\downloads\\c#\\tiendaweb\\tiendaweb\\areas\\admin\\viewmodel\\iconfiguracionrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C4BCAFC1-BCC3-5AAA-F131-B1384E53CB8F}|TiendaWeb\\TiendaWeb.csproj|solutionrelative:tiendaweb\\areas\\admin\\viewmodel\\iconfiguracionrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C4BCAFC1-BCC3-5AAA-F131-B1384E53CB8F}|TiendaWeb\\TiendaWeb.csproj|c:\\users\\pcs\\downloads\\c#\\tiendaweb\\tiendaweb\\areas\\admin\\viewmodel\\dashboardviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C4BCAFC1-BCC3-5AAA-F131-B1384E53CB8F}|TiendaWeb\\TiendaWeb.csproj|solutionrelative:tiendaweb\\areas\\admin\\viewmodel\\dashboardviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{C4BCAFC1-BCC3-5AAA-F131-B1384E53CB8F}|TiendaWeb\\TiendaWeb.csproj|c:\\users\\pcs\\downloads\\c#\\tiendaweb\\tiendaweb\\areas\\admin\\views\\shared\\_layoutadmin.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{C4BCAFC1-BCC3-5AAA-F131-B1384E53CB8F}|TiendaWeb\\TiendaWeb.csproj|solutionrelative:tiendaweb\\areas\\admin\\views\\shared\\_layoutadmin.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{C4BCAFC1-BCC3-5AAA-F131-B1384E53CB8F}|TiendaWeb\\TiendaWeb.csproj|c:\\users\\pcs\\downloads\\c#\\tiendaweb\\tiendaweb\\controllers\\logincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{C4BCAFC1-BCC3-5AAA-F131-B1384E53CB8F}|TiendaWeb\\TiendaWeb.csproj|solutionrelative:tiendaweb\\controllers\\logincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{C4BCAFC1-BCC3-5AAA-F131-B1384E53CB8F}|TiendaWeb\\TiendaWeb.csproj|c:\\users\\pcs\\downloads\\c#\\tiendaweb\\tiendaweb\\areas\\admin\\viewmodel\\dashboardviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C4BCAFC1-BCC3-5AAA-F131-B1384E53CB8F}|TiendaWeb\\TiendaWeb.csproj|solutionrelative:tiendaweb\\areas\\admin\\viewmodel\\dashboardviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{C4BCAFC1-BCC3-5AAA-F131-B1384E53CB8F}|TiendaWeb\\TiendaWeb.csproj|c:\\users\\pcs\\downloads\\c#\\tiendaweb\\tiendaweb\\areas\\admin\\service\\dashboardservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -54,11 +82,115 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 5,
+          "SelectedChildIndex": 7,
           "Children": [
             {
               "$type": "Document",
               "DocumentIndex": 1,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\Areas\\admin\\Views\\Configuracion\\Index.cshtml",
+              "RelativeDocumentMoniker": "TiendaWeb\\Areas\\admin\\Views\\Configuracion\\Index.cshtml",
+              "ToolTip": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\Areas\\admin\\Views\\Configuracion\\Index.cshtml",
+              "RelativeToolTip": "TiendaWeb\\Areas\\admin\\Views\\Configuracion\\Index.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAALMAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-06-26T22:08:28.896Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "ConfiguracionController.cs",
+              "DocumentMoniker": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\Areas\\admin\\Controllers\\ConfiguracionController.cs",
+              "RelativeDocumentMoniker": "TiendaWeb\\Areas\\admin\\Controllers\\ConfiguracionController.cs",
+              "ToolTip": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\Areas\\admin\\Controllers\\ConfiguracionController.cs",
+              "RelativeToolTip": "TiendaWeb\\Areas\\admin\\Controllers\\ConfiguracionController.cs",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAAABkAAAAsAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-26T22:08:04.47Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "ConfiguracionService.cs",
+              "DocumentMoniker": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\Areas\\admin\\service\\ConfiguracionService.cs",
+              "RelativeDocumentMoniker": "TiendaWeb\\Areas\\admin\\service\\ConfiguracionService.cs",
+              "ToolTip": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\Areas\\admin\\service\\ConfiguracionService.cs",
+              "RelativeToolTip": "TiendaWeb\\Areas\\admin\\service\\ConfiguracionService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAD8AAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-26T22:07:23.025Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "IConfiguracionService.cs",
+              "DocumentMoniker": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\Areas\\admin\\service\\IConfiguracionService.cs",
+              "RelativeDocumentMoniker": "TiendaWeb\\Areas\\admin\\service\\IConfiguracionService.cs",
+              "ToolTip": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\Areas\\admin\\service\\IConfiguracionService.cs",
+              "RelativeToolTip": "TiendaWeb\\Areas\\admin\\service\\IConfiguracionService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-26T22:07:02.92Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "ConfiguracionRepository.cs",
+              "DocumentMoniker": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\Areas\\admin\\repository\\ConfiguracionRepository.cs",
+              "RelativeDocumentMoniker": "TiendaWeb\\Areas\\admin\\repository\\ConfiguracionRepository.cs",
+              "ToolTip": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\Areas\\admin\\repository\\ConfiguracionRepository.cs",
+              "RelativeToolTip": "TiendaWeb\\Areas\\admin\\repository\\ConfiguracionRepository.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABYAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-26T22:03:30.519Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "IConfiguracionRepository.cs",
+              "DocumentMoniker": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\Areas\\admin\\ViewModel\\IConfiguracionRepository.cs",
+              "RelativeDocumentMoniker": "TiendaWeb\\Areas\\admin\\ViewModel\\IConfiguracionRepository.cs",
+              "ToolTip": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\Areas\\admin\\ViewModel\\IConfiguracionRepository.cs",
+              "RelativeToolTip": "TiendaWeb\\Areas\\admin\\ViewModel\\IConfiguracionRepository.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAA2AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-26T22:02:55.465Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "ConfiguracionViewModel.cs",
+              "DocumentMoniker": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\Areas\\admin\\ViewModel\\ConfiguracionViewModel.cs",
+              "RelativeDocumentMoniker": "TiendaWeb\\Areas\\admin\\ViewModel\\ConfiguracionViewModel.cs",
+              "ToolTip": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\Areas\\admin\\ViewModel\\ConfiguracionViewModel.cs",
+              "RelativeToolTip": "TiendaWeb\\Areas\\admin\\ViewModel\\ConfiguracionViewModel.cs",
+              "ViewState": "AgIAAB0AAAAAAAAAAAAuwD8AAAA0AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-26T22:02:06.548Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\Program.cs",
+              "RelativeDocumentMoniker": "TiendaWeb\\Program.cs",
+              "ToolTip": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\Program.cs",
+              "RelativeToolTip": "TiendaWeb\\Program.cs",
+              "ViewState": "AgIAABEAAAAAAAAAAAAAACgAAABSAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-26T20:42:20.806Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
               "Title": "_LayoutAdmin.cshtml",
               "DocumentMoniker": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\Areas\\admin\\Views\\Shared\\_LayoutAdmin.cshtml",
               "RelativeDocumentMoniker": "TiendaWeb\\Areas\\admin\\Views\\Shared\\_LayoutAdmin.cshtml",
@@ -66,12 +198,11 @@
               "RelativeToolTip": "TiendaWeb\\Areas\\admin\\Views\\Shared\\_LayoutAdmin.cshtml",
               "ViewState": "AgIAAE0BAAAAAAAAAAAAAGIBAAAXAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-06-26T20:43:17.695Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-26T20:43:17.695Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 11,
               "Title": "DashboardService.cs",
               "DocumentMoniker": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\Areas\\admin\\service\\DashboardService.cs",
               "RelativeDocumentMoniker": "TiendaWeb\\Areas\\admin\\service\\DashboardService.cs",
@@ -79,12 +210,11 @@
               "RelativeToolTip": "TiendaWeb\\Areas\\admin\\service\\DashboardService.cs",
               "ViewState": "AgIAABoAAAAAAAAAAAAAADcAAAAfAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-26T20:42:44.374Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-26T20:42:44.374Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 10,
               "Title": "LoginController.cs",
               "DocumentMoniker": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\Controllers\\LoginController.cs",
               "RelativeDocumentMoniker": "TiendaWeb\\Controllers\\LoginController.cs",
@@ -92,12 +222,11 @@
               "RelativeToolTip": "TiendaWeb\\Controllers\\LoginController.cs",
               "ViewState": "AgIAAAgAAAAAAAAAAAAkwEwAAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-26T20:40:28.594Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-26T20:40:28.594Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 8,
               "Title": "DashboardViewModel.cs",
               "DocumentMoniker": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\Areas\\admin\\ViewModel\\DashboardViewModel.cs",
               "RelativeDocumentMoniker": "TiendaWeb\\Areas\\admin\\ViewModel\\DashboardViewModel.cs",
@@ -110,7 +239,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 13,
               "Title": "DashboardController.cs",
               "DocumentMoniker": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\Areas\\admin\\Controllers\\DashboardController.cs",
               "RelativeDocumentMoniker": "TiendaWeb\\Areas\\admin\\Controllers\\DashboardController.cs",
@@ -118,25 +247,11 @@
               "RelativeToolTip": "TiendaWeb\\Areas\\admin\\Controllers\\DashboardController.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABcAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-26T20:42:30.98Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-26T20:42:30.98Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "Program.cs",
-              "DocumentMoniker": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\Program.cs",
-              "RelativeDocumentMoniker": "TiendaWeb\\Program.cs",
-              "ToolTip": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\Program.cs",
-              "RelativeToolTip": "TiendaWeb\\Program.cs",
-              "ViewState": "AgIAACwAAAAAAAAAAAAAAEMAAAAKAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-26T20:42:20.806Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 14,
               "Title": "Index.cshtml",
               "DocumentMoniker": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\Views\\Login\\Index.cshtml",
               "RelativeDocumentMoniker": "TiendaWeb\\Views\\Login\\Index.cshtml",
@@ -144,12 +259,11 @@
               "RelativeToolTip": "TiendaWeb\\Views\\Login\\Index.cshtml",
               "ViewState": "AgIAADUAAAAAAAAAAAAAAFsAAAAHAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-06-26T20:42:12.174Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-26T20:42:12.174Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 12,
               "Title": "IDashboardService.cs",
               "DocumentMoniker": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\Areas\\admin\\service\\IDashboardService.cs",
               "RelativeDocumentMoniker": "TiendaWeb\\Areas\\admin\\service\\IDashboardService.cs",
@@ -157,12 +271,11 @@
               "RelativeToolTip": "TiendaWeb\\Areas\\admin\\service\\IDashboardService.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-26T20:20:37.553Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-26T20:20:37.553Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 15,
               "Title": "IUsuarioRepository.cs",
               "DocumentMoniker": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\Infrastructure\\repositories\\IUsuarioRepository.cs",
               "RelativeDocumentMoniker": "TiendaWeb\\Infrastructure\\repositories\\IUsuarioRepository.cs",
@@ -170,12 +283,11 @@
               "RelativeToolTip": "TiendaWeb\\Infrastructure\\repositories\\IUsuarioRepository.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-26T20:41:14.754Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-26T20:41:14.754Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 16,
               "Title": "Usuario.cs",
               "DocumentMoniker": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\Infrastructure\\Models\\Usuario.cs",
               "RelativeDocumentMoniker": "TiendaWeb\\Infrastructure\\Models\\Usuario.cs",
@@ -183,12 +295,11 @@
               "RelativeToolTip": "TiendaWeb\\Infrastructure\\Models\\Usuario.cs",
               "ViewState": "AgIAABcAAAAAAAAAAAAowDMAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-26T20:40:58.265Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-26T20:40:58.265Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 17,
               "Title": "AppDbContext.cs",
               "DocumentMoniker": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\Infrastructure\\Data\\AppDbContext.cs",
               "RelativeDocumentMoniker": "TiendaWeb\\Infrastructure\\Data\\AppDbContext.cs",
@@ -196,8 +307,7 @@
               "RelativeToolTip": "TiendaWeb\\Infrastructure\\Data\\AppDbContext.cs",
               "ViewState": "AgIAAEAAAAAAAAAAAAAIwAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-26T20:40:44.751Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-26T20:40:44.751Z"
             }
           ]
         }
