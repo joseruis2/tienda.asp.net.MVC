@@ -1,0 +1,207 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{C4BCAFC1-BCC3-5AAA-F131-B1384E53CB8F}|TiendaWeb\\TiendaWeb.csproj|c:\\users\\pcs\\downloads\\c#\\tiendaweb\\tiendaweb\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C4BCAFC1-BCC3-5AAA-F131-B1384E53CB8F}|TiendaWeb\\TiendaWeb.csproj|solutionrelative:tiendaweb\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C4BCAFC1-BCC3-5AAA-F131-B1384E53CB8F}|TiendaWeb\\TiendaWeb.csproj|c:\\users\\pcs\\downloads\\c#\\tiendaweb\\tiendaweb\\areas\\admin\\views\\shared\\_layoutadmin.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{C4BCAFC1-BCC3-5AAA-F131-B1384E53CB8F}|TiendaWeb\\TiendaWeb.csproj|solutionrelative:tiendaweb\\areas\\admin\\views\\shared\\_layoutadmin.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C4BCAFC1-BCC3-5AAA-F131-B1384E53CB8F}|TiendaWeb\\TiendaWeb.csproj|c:\\users\\pcs\\downloads\\c#\\tiendaweb\\tiendaweb\\controllers\\logincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C4BCAFC1-BCC3-5AAA-F131-B1384E53CB8F}|TiendaWeb\\TiendaWeb.csproj|solutionrelative:tiendaweb\\controllers\\logincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C4BCAFC1-BCC3-5AAA-F131-B1384E53CB8F}|TiendaWeb\\TiendaWeb.csproj|c:\\users\\pcs\\downloads\\c#\\tiendaweb\\tiendaweb\\areas\\admin\\viewmodel\\dashboardviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C4BCAFC1-BCC3-5AAA-F131-B1384E53CB8F}|TiendaWeb\\TiendaWeb.csproj|solutionrelative:tiendaweb\\areas\\admin\\viewmodel\\dashboardviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C4BCAFC1-BCC3-5AAA-F131-B1384E53CB8F}|TiendaWeb\\TiendaWeb.csproj|c:\\users\\pcs\\downloads\\c#\\tiendaweb\\tiendaweb\\areas\\admin\\service\\dashboardservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C4BCAFC1-BCC3-5AAA-F131-B1384E53CB8F}|TiendaWeb\\TiendaWeb.csproj|solutionrelative:tiendaweb\\areas\\admin\\service\\dashboardservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C4BCAFC1-BCC3-5AAA-F131-B1384E53CB8F}|TiendaWeb\\TiendaWeb.csproj|c:\\users\\pcs\\downloads\\c#\\tiendaweb\\tiendaweb\\areas\\admin\\service\\idashboardservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C4BCAFC1-BCC3-5AAA-F131-B1384E53CB8F}|TiendaWeb\\TiendaWeb.csproj|solutionrelative:tiendaweb\\areas\\admin\\service\\idashboardservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C4BCAFC1-BCC3-5AAA-F131-B1384E53CB8F}|TiendaWeb\\TiendaWeb.csproj|c:\\users\\pcs\\downloads\\c#\\tiendaweb\\tiendaweb\\areas\\admin\\controllers\\dashboardcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C4BCAFC1-BCC3-5AAA-F131-B1384E53CB8F}|TiendaWeb\\TiendaWeb.csproj|solutionrelative:tiendaweb\\areas\\admin\\controllers\\dashboardcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C4BCAFC1-BCC3-5AAA-F131-B1384E53CB8F}|TiendaWeb\\TiendaWeb.csproj|c:\\users\\pcs\\downloads\\c#\\tiendaweb\\tiendaweb\\views\\login\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{C4BCAFC1-BCC3-5AAA-F131-B1384E53CB8F}|TiendaWeb\\TiendaWeb.csproj|solutionrelative:tiendaweb\\views\\login\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C4BCAFC1-BCC3-5AAA-F131-B1384E53CB8F}|TiendaWeb\\TiendaWeb.csproj|c:\\users\\pcs\\downloads\\c#\\tiendaweb\\tiendaweb\\infrastructure\\repositories\\iusuariorepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C4BCAFC1-BCC3-5AAA-F131-B1384E53CB8F}|TiendaWeb\\TiendaWeb.csproj|solutionrelative:tiendaweb\\infrastructure\\repositories\\iusuariorepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C4BCAFC1-BCC3-5AAA-F131-B1384E53CB8F}|TiendaWeb\\TiendaWeb.csproj|c:\\users\\pcs\\downloads\\c#\\tiendaweb\\tiendaweb\\infrastructure\\models\\usuario.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C4BCAFC1-BCC3-5AAA-F131-B1384E53CB8F}|TiendaWeb\\TiendaWeb.csproj|solutionrelative:tiendaweb\\infrastructure\\models\\usuario.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C4BCAFC1-BCC3-5AAA-F131-B1384E53CB8F}|TiendaWeb\\TiendaWeb.csproj|c:\\users\\pcs\\downloads\\c#\\tiendaweb\\tiendaweb\\infrastructure\\data\\appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C4BCAFC1-BCC3-5AAA-F131-B1384E53CB8F}|TiendaWeb\\TiendaWeb.csproj|solutionrelative:tiendaweb\\infrastructure\\data\\appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 5,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "_LayoutAdmin.cshtml",
+              "DocumentMoniker": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\Areas\\admin\\Views\\Shared\\_LayoutAdmin.cshtml",
+              "RelativeDocumentMoniker": "TiendaWeb\\Areas\\admin\\Views\\Shared\\_LayoutAdmin.cshtml",
+              "ToolTip": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\Areas\\admin\\Views\\Shared\\_LayoutAdmin.cshtml",
+              "RelativeToolTip": "TiendaWeb\\Areas\\admin\\Views\\Shared\\_LayoutAdmin.cshtml",
+              "ViewState": "AgIAAE0BAAAAAAAAAAAAAGIBAAAXAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-06-26T20:43:17.695Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "DashboardService.cs",
+              "DocumentMoniker": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\Areas\\admin\\service\\DashboardService.cs",
+              "RelativeDocumentMoniker": "TiendaWeb\\Areas\\admin\\service\\DashboardService.cs",
+              "ToolTip": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\Areas\\admin\\service\\DashboardService.cs",
+              "RelativeToolTip": "TiendaWeb\\Areas\\admin\\service\\DashboardService.cs",
+              "ViewState": "AgIAABoAAAAAAAAAAAAAADcAAAAfAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-26T20:42:44.374Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "LoginController.cs",
+              "DocumentMoniker": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\Controllers\\LoginController.cs",
+              "RelativeDocumentMoniker": "TiendaWeb\\Controllers\\LoginController.cs",
+              "ToolTip": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\Controllers\\LoginController.cs",
+              "RelativeToolTip": "TiendaWeb\\Controllers\\LoginController.cs",
+              "ViewState": "AgIAAAgAAAAAAAAAAAAkwEwAAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-26T20:40:28.594Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "DashboardViewModel.cs",
+              "DocumentMoniker": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\Areas\\admin\\ViewModel\\DashboardViewModel.cs",
+              "RelativeDocumentMoniker": "TiendaWeb\\Areas\\admin\\ViewModel\\DashboardViewModel.cs",
+              "ToolTip": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\Areas\\admin\\ViewModel\\DashboardViewModel.cs",
+              "RelativeToolTip": "TiendaWeb\\Areas\\admin\\ViewModel\\DashboardViewModel.cs",
+              "ViewState": "AgIAAAEAAAAAAAAAAAAQwBgAAAAYAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-26T20:43:08.576Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "DashboardController.cs",
+              "DocumentMoniker": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\Areas\\admin\\Controllers\\DashboardController.cs",
+              "RelativeDocumentMoniker": "TiendaWeb\\Areas\\admin\\Controllers\\DashboardController.cs",
+              "ToolTip": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\Areas\\admin\\Controllers\\DashboardController.cs",
+              "RelativeToolTip": "TiendaWeb\\Areas\\admin\\Controllers\\DashboardController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABcAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-26T20:42:30.98Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\Program.cs",
+              "RelativeDocumentMoniker": "TiendaWeb\\Program.cs",
+              "ToolTip": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\Program.cs",
+              "RelativeToolTip": "TiendaWeb\\Program.cs",
+              "ViewState": "AgIAACwAAAAAAAAAAAAAAEMAAAAKAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-26T20:42:20.806Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\Views\\Login\\Index.cshtml",
+              "RelativeDocumentMoniker": "TiendaWeb\\Views\\Login\\Index.cshtml",
+              "ToolTip": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\Views\\Login\\Index.cshtml",
+              "RelativeToolTip": "TiendaWeb\\Views\\Login\\Index.cshtml",
+              "ViewState": "AgIAADUAAAAAAAAAAAAAAFsAAAAHAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-06-26T20:42:12.174Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "IDashboardService.cs",
+              "DocumentMoniker": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\Areas\\admin\\service\\IDashboardService.cs",
+              "RelativeDocumentMoniker": "TiendaWeb\\Areas\\admin\\service\\IDashboardService.cs",
+              "ToolTip": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\Areas\\admin\\service\\IDashboardService.cs",
+              "RelativeToolTip": "TiendaWeb\\Areas\\admin\\service\\IDashboardService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-26T20:20:37.553Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "IUsuarioRepository.cs",
+              "DocumentMoniker": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\Infrastructure\\repositories\\IUsuarioRepository.cs",
+              "RelativeDocumentMoniker": "TiendaWeb\\Infrastructure\\repositories\\IUsuarioRepository.cs",
+              "ToolTip": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\Infrastructure\\repositories\\IUsuarioRepository.cs",
+              "RelativeToolTip": "TiendaWeb\\Infrastructure\\repositories\\IUsuarioRepository.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-26T20:41:14.754Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "Usuario.cs",
+              "DocumentMoniker": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\Infrastructure\\Models\\Usuario.cs",
+              "RelativeDocumentMoniker": "TiendaWeb\\Infrastructure\\Models\\Usuario.cs",
+              "ToolTip": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\Infrastructure\\Models\\Usuario.cs",
+              "RelativeToolTip": "TiendaWeb\\Infrastructure\\Models\\Usuario.cs",
+              "ViewState": "AgIAABcAAAAAAAAAAAAowDMAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-26T20:40:58.265Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "AppDbContext.cs",
+              "DocumentMoniker": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\Infrastructure\\Data\\AppDbContext.cs",
+              "RelativeDocumentMoniker": "TiendaWeb\\Infrastructure\\Data\\AppDbContext.cs",
+              "ToolTip": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\Infrastructure\\Data\\AppDbContext.cs",
+              "RelativeToolTip": "TiendaWeb\\Infrastructure\\Data\\AppDbContext.cs",
+              "ViewState": "AgIAAEAAAAAAAAAAAAAIwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-26T20:40:44.751Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,386 @@
+﻿@using Microsoft.AspNetCore.Http
+@using System.Security.Claims
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] — Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+    <style>
+            :root {
+                --sidebar-bg: #0f172a;
+                --sidebar-hover: #1e293b;
+                --sidebar-active: #1a56db;
+                --sidebar-text: #94a3b8;
+                --sidebar-text-active: #fff;
+                --sidebar-width: 260px;
+                --topbar-h: 60px;
+            }
+
+            body {
+                margin: 0;
+                font-family: 'Segoe UI', sans-serif;
+                background: #f1f5f9;
+            }
+
+            /* ── SIDEBAR ── */
+            #sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: var(--sidebar-width);
+                height: 100vh;
+                background: var(--sidebar-bg);
+                display: flex;
+                flex-direction: column;
+                z-index: 1040;
+                transition: transform .25s ease;
+            }
+
+            .sidebar-brand {
+                height: var(--topbar-h);
+                display: flex;
+                align-items: center;
+                gap: .75rem;
+                padding: 0 1.25rem;
+                border-bottom: 1px solid #1e293b;
+            }
+
+                .sidebar-brand .brand-icon {
+                    width: 34px;
+                    height: 34px;
+                    border-radius: 8px;
+                    background: var(--sidebar-active);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+
+                    .sidebar-brand .brand-icon i {
+                        color: #fff;
+                        font-size: 1.1rem;
+                    }
+
+                .sidebar-brand span {
+                    color: #fff;
+                    font-weight: 700;
+                    font-size: 1rem;
+                }
+
+            .sidebar-scroll {
+                flex: 1;
+                overflow-y: auto;
+                padding: .75rem 0;
+            }
+
+                .sidebar-scroll::-webkit-scrollbar {
+                    width: 4px;
+                }
+
+                .sidebar-scroll::-webkit-scrollbar-thumb {
+                    background: #334155;
+                    border-radius: 4px;
+                }
+
+            .nav-section {
+                font-size: .7rem;
+                font-weight: 700;
+                letter-spacing: .08em;
+                color: #475569;
+                padding: .75rem 1.25rem .25rem;
+                text-transform: uppercase;
+            }
+
+            .nav-item-admin a {
+                display: flex;
+                align-items: center;
+                gap: .75rem;
+                padding: .55rem 1.25rem;
+                color: var(--sidebar-text);
+                text-decoration: none;
+                font-size: .875rem;
+                border-radius: 0;
+                transition: background .15s, color .15s;
+            }
+
+                .nav-item-admin a:hover {
+                    background: var(--sidebar-hover);
+                    color: #fff;
+                }
+
+                .nav-item-admin a.active {
+                    background: var(--sidebar-active);
+                    color: #fff;
+                }
+
+                .nav-item-admin a i {
+                    font-size: 1rem;
+                    width: 20px;
+                    text-align: center;
+                }
+
+            /* Submenú */
+            .nav-sub {
+                padding-left: 2.75rem;
+            }
+
+                .nav-sub a {
+                    font-size: .825rem;
+                    padding: .4rem 1rem;
+                    color: var(--sidebar-text);
+                    text-decoration: none;
+                    display: block;
+                    border-radius: 4px;
+                    transition: color .15s;
+                }
+
+                    .nav-sub a:hover, .nav-sub a.active {
+                        color: #fff;
+                    }
+
+            .sidebar-footer {
+                padding: .75rem 1.25rem;
+                border-top: 1px solid #1e293b;
+                font-size: .8rem;
+                color: #475569;
+            }
+
+                .sidebar-footer .user-info {
+                    display: flex;
+                    align-items: center;
+                    gap: .6rem;
+                }
+
+                .sidebar-footer .avatar {
+                    width: 32px;
+                    height: 32px;
+                    border-radius: 50%;
+                    background: var(--sidebar-active);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: .8rem;
+                    color: #fff;
+                    font-weight: 700;
+                    flex-shrink: 0;
+                }
+
+                .sidebar-footer .user-name {
+                    color: #cbd5e1;
+                    font-weight: 600;
+                    font-size: .825rem;
+                }
+
+                .sidebar-footer .user-rol {
+                    font-size: .72rem;
+                    color: #475569;
+                }
+
+            /* ── TOPBAR ── */
+            #topbar {
+                position: fixed;
+                top: 0;
+                left: var(--sidebar-width);
+                right: 0;
+                height: var(--topbar-h);
+                background: #fff;
+                border-bottom: 1px solid #e2e8f0;
+                display: flex;
+                align-items: center;
+                padding: 0 1.5rem;
+                gap: 1rem;
+                z-index: 1030;
+            }
+
+                #topbar .page-title {
+                    font-weight: 700;
+                    font-size: 1rem;
+                    color: #0f172a;
+                    flex: 1;
+                }
+
+                #topbar .btn-sidebar-toggle {
+                    display: none;
+                }
+
+            /* ── MAIN ── */
+            #main-content {
+                margin-left: var(--sidebar-width);
+                margin-top: var(--topbar-h);
+                padding: 1.75rem;
+                min-height: calc(100vh - var(--topbar-h));
+            }
+
+            /* ── RESPONSIVE ── */
+            @@media (max-width: 991px) {
+                #sidebar {
+                    transform: translateX(-100%);
+                }
+
+                    #sidebar.show {
+                        transform: translateX(0);
+                    }
+
+                #topbar {
+                    left: 0;
+                }
+
+                    #topbar .btn-sidebar-toggle {
+                        display: flex;
+                    }
+
+                #main-content {
+                    margin-left: 0;
+                }
+            }
+    </style>
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+
+    @{
+        var usuario = User.FindFirst("Nombres")?.Value ?? User.Identity?.Name ?? "Usuario";
+        var rol = User.FindFirst(ClaimTypes.Role)?.Value ?? "";
+        var iniciales = usuario.Length > 0 ? usuario[0].ToString().ToUpper() : "U";
+
+        var currentCtrl = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+        var currentAct = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+
+        bool IsActive(string ctrl, string? act = null) =>
+            currentCtrl.Equals(ctrl, StringComparison.OrdinalIgnoreCase) &&
+            (act == null || currentAct.Equals(act, StringComparison.OrdinalIgnoreCase));
+    }
+
+    <!-- ══ SIDEBAR ══ -->
+    <nav id="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-icon"><i class="bi bi-shop"></i></div>
+            <span>TiendaWeb</span>
+        </div>
+
+        <div class="sidebar-scroll">
+            <div class="nav-section">Principal</div>
+            <ul class="list-unstyled mb-0">
+                <li class="nav-item-admin">
+                    <a asp-controller="Dashboard" asp-action="Index"
+                       class="@(IsActive("Dashboard") ? "active" : "")">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                </li>
+            </ul>
+
+            <div class="nav-section mt-2">Operaciones</div>
+            <ul class="list-unstyled mb-0">
+                <li class="nav-item-admin">
+                    <a data-bs-toggle="collapse" href="#menuVentas" role="button"
+                       class="@(IsActive("Ventas") || IsActive("Caja") ? "active" : "")">
+                        <i class="bi bi-cart3"></i> Ventas / Caja
+                        <i class="bi bi-chevron-down ms-auto" style="font-size:.7rem"></i>
+                    </a>
+                    <div class="collapse nav-sub @(IsActive("Ventas") || IsActive("Caja") ? "show" : "")" id="menuVentas">
+                        <a asp-controller="Ventas" asp-action="Index" class="@(IsActive("Ventas") ? "active" : "")">Nueva venta</a>
+                        <a asp-controller="Ventas" asp-action="Historial" class="@(IsActive("Ventas", "Historial") ? "active" : "")">Historial</a>
+                        <a asp-controller="Caja" asp-action="Index" class="@(IsActive("Caja") ? "active" : "")">Caja</a>
+                    </div>
+                </li>
+                <li class="nav-item-admin">
+                    <a data-bs-toggle="collapse" href="#menuProductos" role="button"
+                       class="@(IsActive("Productos") || IsActive("Categorias") ? "active" : "")">
+                        <i class="bi bi-box-seam"></i> Productos / Categorías
+                        <i class="bi bi-chevron-down ms-auto" style="font-size:.7rem"></i>
+                    </a>
+                    <div class="collapse nav-sub @(IsActive("Productos") || IsActive("Categorias") ? "show" : "")" id="menuProductos">
+                        <a asp-controller="Productos" asp-action="Index" class="@(IsActive("Productos") ? "active" : "")">Productos</a>
+                        <a asp-controller="Categorias" asp-action="Index" class="@(IsActive("Categorias") ? "active" : "")">Categorías</a>
+                    </div>
+                </li>
+                <li class="nav-item-admin">
+                    <a data-bs-toggle="collapse" href="#menuCompras" role="button"
+                       class="@(IsActive("Compras") || IsActive("Proveedores") ? "active" : "")">
+                        <i class="bi bi-truck"></i> Compras / Proveedores
+                        <i class="bi bi-chevron-down ms-auto" style="font-size:.7rem"></i>
+                    </a>
+                    <div class="collapse nav-sub @(IsActive("Compras") || IsActive("Proveedores") ? "show" : "")" id="menuCompras">
+                        <a asp-controller="Compras" asp-action="Index" class="@(IsActive("Compras") ? "active" : "")">Órdenes de compra</a>
+                        <a asp-controller="Proveedores" asp-action="Index" class="@(IsActive("Proveedores") ? "active" : "")">Proveedores</a>
+                    </div>
+                </li>
+                <li class="nav-item-admin">
+                    <a asp-controller="Clientes" asp-action="Index"
+                       class="@(IsActive("Clientes") ? "active" : "")">
+                        <i class="bi bi-people"></i> Clientes
+                    </a>
+                </li>
+            </ul>
+
+            <div class="nav-section mt-2">Administración</div>
+            <ul class="list-unstyled mb-0">
+                <li class="nav-item-admin">
+                    <a asp-controller="Reportes" asp-action="Index"
+                       class="@(IsActive("Reportes") ? "active" : "")">
+                        <i class="bi bi-bar-chart-line"></i> Reportes
+                    </a>
+                </li>
+                <li class="nav-item-admin">
+                    <a asp-controller="Usuarios" asp-action="Index"
+                       class="@(IsActive("Usuarios") ? "active" : "")">
+                        <i class="bi bi-person-gear"></i> Usuarios
+                    </a>
+                </li>
+                <li class="nav-item-admin">
+                    <a asp-controller="Configuracion" asp-action="Index"
+                       class="@(IsActive("Configuracion") ? "active" : "")">
+                        <i class="bi bi-gear"></i> Configuración
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="avatar">@iniciales</div>
+                <div>
+                    <div class="user-name">@usuario</div>
+                    <div class="user-rol">@rol</div>
+                </div>
+
+                <form asp-controller="Login" asp-action="Logout" asp-area="" method="post" class="ms-auto">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-link p-0 text-secondary" title="Cerrar sesión">
+                        <i class="bi bi-box-arrow-right"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ══ TOPBAR ══ -->
+    <header id="topbar">
+        <button class="btn btn-sidebar-toggle btn-sm btn-outline-secondary"
+                onclick="document.getElementById('sidebar').classList.toggle('show')">
+            <i class="bi bi-list"></i>
+        </button>
+        <span class="page-title">@(ViewData["Title"] ?? "Dashboard")</span>
+
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-success-subtle text-success border border-success-subtle">
+                <i class="bi bi-circle-fill me-1" style="font-size:.45rem"></i>En línea
+            </span>
+            <span class="text-muted small d-none d-md-inline">
+                @DateTime.Now.ToString("ddd dd MMM yyyy")
+            </span>
+        </div>
+    </header>
+
+    <!-- ══ CONTENIDO ══ -->
+    <main id="main-content">
+        @RenderBody()
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
