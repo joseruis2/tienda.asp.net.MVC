@@ -1,0 +1,411 @@
+﻿@model TiendaWeb.Areas.admin.ViewModel.UsuariosIndexViewModel
+@{
+    Layout = "~/Areas/admin/Views/Shared/_LayoutAdmin.cshtml";
+    ViewData["Title"] = "Usuarios";
+}
+
+<style>
+    .user-card { border:none; border-radius:14px; box-shadow:0 1px 6px rgba(0,0,0,.07); }
+    .avatar-sm { width:34px; height:34px; border-radius:50%; background:#1a56db;
+                 display:flex; align-items:center; justify-content:center;
+                 font-size:.8rem; color:#fff; font-weight:700; flex-shrink:0; }
+    .badge-rol { font-size:.7rem; padding:.3em .6em; }
+    .form-label { font-size:.825rem; font-weight:600; color:#374151; }
+    .form-control, .form-select { font-size:.875rem; background:#f8fafc; border-color:#e2e8f0; }
+    .form-control:focus, .form-select:focus {
+        border-color:#1a56db; box-shadow:0 0 0 3px rgba(26,86,219,.12); background:#fff;
+    }
+</style>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show mb-4 py-2">
+        <i class="bi bi-check-circle me-1"></i> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show mb-4 py-2">
+        <i class="bi bi-x-circle me-1"></i> @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Header -->
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h5 class="mb-0 fw-bold">Usuarios del sistema</h5>
+        <span class="text-muted small">@Model.Lista.Count usuarios registrados</span>
+    </div>
+    <button class="btn btn-primary fw-semibold"
+            data-bs-toggle="modal" data-bs-target="#modalCrear">
+        <i class="bi bi-person-plus me-1"></i> Nuevo usuario
+    </button>
+</div>
+
+<!-- Tabla -->
+<div class="card user-card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Usuario</th>
+                        <th>DNI</th>
+                        <th>Contacto</th>
+                        <th>Rol</th>
+                        <th>Estado</th>
+                        <th>Último acceso</th>
+                        <th class="text-end pe-4">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var u in Model.Lista)
+                    {
+                        var inicial = u.NombreCompleto.Length > 0
+                            ? u.NombreCompleto[0].ToString().ToUpper() : "U";
+                        <tr>
+                            <td class="ps-4">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="avatar-sm">@inicial</div>
+                                    <div>
+                                        <div class="fw-semibold" style="font-size:.875rem">
+                                            @u.NombreCompleto
+                                        </div>
+                                        <div class="text-muted" style="font-size:.75rem">
+                                            @u.Username
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="small text-muted">@(u.Dni ?? "—")</td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(u.Email))
+                                {
+                                    <div class="small">@u.Email</div>
+                                }
+                                @if (!string.IsNullOrEmpty(u.Telefono))
+                                {
+                                    <div class="small text-muted">@u.Telefono</div>
+                                }
+                                @if (string.IsNullOrEmpty(u.Email) && string.IsNullOrEmpty(u.Telefono))
+                                {
+                                    <span class="text-muted small">—</span>
+                                }
+                            </td>
+                            <td>
+                                @{
+                                    var (rolClass, rolIcon) = u.Rol switch
+                                    {
+                                        "ADMIN" => ("bg-danger-subtle text-danger", "bi-shield-fill"),
+                                        "CAJERO" => ("bg-primary-subtle text-primary", "bi-cash-register"),
+                                        "VENDEDOR" => ("bg-success-subtle text-success", "bi-bag"),
+                                        "ALMACENERO" => ("bg-warning-subtle text-warning", "bi-box-seam"),
+                                        _ => ("bg-secondary-subtle text-secondary", "bi-person")
+                                    };
+                                }
+                                <span class="badge badge-rol @rolClass">
+                                    <i class="bi @rolIcon me-1"></i>@u.Rol
+                                </span>
+                            </td>
+                            <td>
+                                @if (u.Estado == true)
+                                {
+                                    <span class="badge bg-success-subtle text-success">Activo</span>
+                                }
+                                else
+                                {
+
+                                    <span class="badge bg-secondary-subtle text-secondary">Inactivo</span>
+                                }
+                            </td>
+                            <td class="small text-muted">
+                                @(u.UltimoAcceso.HasValue
+                                    ? u.UltimoAcceso.Value.ToString("dd/MM/yyyy HH:mm")
+                                    : "Sin acceso")
+                            </td>
+                            <td class="text-end pe-4">
+                                <!-- Editar -->
+                                <form asp-action="Edit" asp-controller="Usuarios"
+                                      asp-area="admin" method="get" class="d-inline">
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-primary me-1"
+                                            onclick="cargarEditar(@u.UsuarioId)">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                </form>
+                                <!-- Eliminar -->
+                                <form asp-action="Delete" asp-controller="Usuarios"
+                                      asp-area="admin" method="post" class="d-inline"
+                                      onsubmit="return confirm('¿Desactivar a @u.NombreCompleto?')">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@u.UsuarioId" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-person-x"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.Lista.Any())
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-5">
+                                <i class="bi bi-people me-1"></i>No hay usuarios registrados
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ══ MODAL CREAR ══ -->
+<div class="modal fade" id="modalCrear" tabindex="-1"
+     data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h6 class="modal-title fw-bold">
+                    <i class="bi bi-person-plus me-1 text-primary"></i>Nuevo usuario
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form asp-action="Create" asp-controller="Usuarios"
+                      asp-area="admin" method="post" id="formCrear">
+                    @Html.AntiForgeryToken()
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="Crear.Username" class="form-label"></label>
+                            <input asp-for="Crear.Username" class="form-control"
+                                   placeholder="usuario123" />
+                            <span asp-validation-for="Crear.Username" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Crear.Rol" class="form-label"></label>
+                            <select asp-for="Crear.Rol" class="form-select">
+                                <option value="CAJERO">CAJERO</option>
+                                <option value="VENDEDOR">VENDEDOR</option>
+                                <option value="ALMACENERO">ALMACENERO</option>
+                                <option value="ADMIN">ADMIN</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Crear.Password" class="form-label"></label>
+                            <div class="input-group">
+                                <input asp-for="Crear.Password" id="pwdC1"
+                                       type="password" class="form-control" />
+                                <button type="button" class="btn btn-outline-secondary"
+                                        onclick="togglePwd('pwdC1','eyeC1')">
+                                    <i class="bi bi-eye" id="eyeC1"></i>
+                                </button>
+                            </div>
+                            <span asp-validation-for="Crear.Password" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Crear.ConfirmPassword" class="form-label"></label>
+                            <div class="input-group">
+                                <input asp-for="Crear.ConfirmPassword" id="pwdC2"
+                                       type="password" class="form-control" />
+                                <button type="button" class="btn btn-outline-secondary"
+                                        onclick="togglePwd('pwdC2','eyeC2')">
+                                    <i class="bi bi-eye" id="eyeC2"></i>
+                                </button>
+                            </div>
+                            <span asp-validation-for="Crear.ConfirmPassword" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Crear.Nombres" class="form-label"></label>
+                            <input asp-for="Crear.Nombres" class="form-control"
+                                   placeholder="Juan" />
+                            <span asp-validation-for="Crear.Nombres" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Crear.Apellidos" class="form-label"></label>
+                            <input asp-for="Crear.Apellidos" class="form-control"
+                                   placeholder="Pérez" />
+                            <span asp-validation-for="Crear.Apellidos" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Crear.Dni" class="form-label"></label>
+                            <input asp-for="Crear.Dni" class="form-control"
+                                   maxlength="8" placeholder="12345678" />
+                            <span asp-validation-for="Crear.Dni" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Crear.Email" class="form-label"></label>
+                            <input asp-for="Crear.Email" type="email" class="form-control" />
+                            <span asp-validation-for="Crear.Email" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Crear.Telefono" class="form-label"></label>
+                            <input asp-for="Crear.Telefono" class="form-control"
+                                   placeholder="999999999" />
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 px-0 pb-0 mt-3">
+                        <button type="button" class="btn btn-secondary"
+                                data-bs-dismiss="modal">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-primary fw-semibold">
+                            <i class="bi bi-floppy me-1"></i>Guardar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══ MODAL EDITAR ══ -->
+<div class="modal fade" id="modalEditar" tabindex="-1"
+     data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h6 class="modal-title fw-bold">
+                    <i class="bi bi-pencil me-1 text-primary"></i>Editar usuario
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form asp-action="Edit" asp-controller="Usuarios"
+                      asp-area="admin" method="post" id="formEditar">
+                    @Html.AntiForgeryToken()
+                    <input asp-for="Editar.UsuarioId" type="hidden" />
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="Editar.Username" class="form-label"></label>
+                            <input asp-for="Editar.Username" class="form-control" />
+                            <span asp-validation-for="Editar.Username" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Editar.Rol" class="form-label"></label>
+                            <select asp-for="Editar.Rol" class="form-select">
+                                <option value="CAJERO">CAJERO</option>
+                                <option value="VENDEDOR">VENDEDOR</option>
+                                <option value="ALMACENERO">ALMACENERO</option>
+                                <option value="ADMIN">ADMIN</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Editar.NewPassword" class="form-label"></label>
+                            <div class="input-group">
+                                <input asp-for="Editar.NewPassword" id="pwdE1"
+                                       type="password" class="form-control" />
+                                <button type="button" class="btn btn-outline-secondary"
+                                        onclick="togglePwd('pwdE1','eyeE1')">
+                                    <i class="bi bi-eye" id="eyeE1"></i>
+                                </button>
+                            </div>
+                            <div class="form-text">Dejar vacío para no cambiar la contraseña</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Editar.ConfirmNewPassword" class="form-label"></label>
+                            <div class="input-group">
+                                <input asp-for="Editar.ConfirmNewPassword" id="pwdE2"
+                                       type="password" class="form-control" />
+                                <button type="button" class="btn btn-outline-secondary"
+                                        onclick="togglePwd('pwdE2','eyeE2')">
+                                    <i class="bi bi-eye" id="eyeE2"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Editar.Nombres" class="form-label"></label>
+                            <input asp-for="Editar.Nombres" class="form-control" />
+                            <span asp-validation-for="Editar.Nombres" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Editar.Apellidos" class="form-label"></label>
+                            <input asp-for="Editar.Apellidos" class="form-control" />
+                            <span asp-validation-for="Editar.Apellidos" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Editar.Dni" class="form-label"></label>
+                            <input asp-for="Editar.Dni" class="form-control" maxlength="8" />
+                            <span asp-validation-for="Editar.Dni" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Editar.Email" class="form-label"></label>
+                            <input asp-for="Editar.Email" type="email" class="form-control" />
+                            <span asp-validation-for="Editar.Email" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Editar.Telefono" class="form-label"></label>
+                            <input asp-for="Editar.Telefono" class="form-control" />
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check form-switch">
+                                <input asp-for="Editar.Estado" class="form-check-input"
+                                       type="checkbox" role="switch" />
+                                <label asp-for="Editar.Estado" class="form-check-label
+                                small fw-semibold"></label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 px-0 pb-0 mt-3">
+                        <button type="button" class="btn btn-secondary"
+                                data-bs-dismiss="modal">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-primary fw-semibold">
+                            <i class="bi bi-floppy me-1"></i>Actualizar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // ── Toggle contraseña ──
+        function togglePwd(inputId, iconId) {
+            const i = document.getElementById(inputId);
+            const e = document.getElementById(iconId);
+            i.type = i.type === 'password' ? 'text' : 'password';
+            e.classList.toggle('bi-eye');
+            e.classList.toggle('bi-eye-slash');
+        }
+
+        // ── Cargar datos en modal editar ──
+        function cargarEditar(id) {
+            fetch(`/admin/Usuarios/GetEditar/${id}`)
+                .then(r => r.json())
+                .then(d => {
+                    document.querySelector('#formEditar [name="Editar.UsuarioId"]').value  = d.usuarioId;
+                    document.querySelector('#formEditar [name="Editar.Username"]').value   = d.username;
+                    document.querySelector('#formEditar [name="Editar.Nombres"]').value    = d.nombres;
+                    document.querySelector('#formEditar [name="Editar.Apellidos"]').value  = d.apellidos;
+                    document.querySelector('#formEditar [name="Editar.Dni"]').value        = d.dni      ?? '';
+                    document.querySelector('#formEditar [name="Editar.Email"]').value      = d.email    ?? '';
+                    document.querySelector('#formEditar [name="Editar.Telefono"]').value   = d.telefono ?? '';
+                    document.querySelector('#formEditar [name="Editar.Rol"]').value        = d.rol;
+                    document.querySelector('#formEditar [name="Editar.Estado"]').checked   = d.estado;
+                    document.getElementById('pwdE1').value = '';
+                    document.getElementById('pwdE2').value = '';
+                    new bootstrap.Modal('#modalEditar').show();
+                });
+        }
+
+        // ── Reabrir modal si hubo error de validación ──
+        @if (TempData["AbrirModalCrear"] != null)
+        {
+                <text>new bootstrap.Modal('#modalCrear').show();</text>
+        }
+        @if (TempData["AbrirModalEditar"] != null)
+        {
+                <text>
+                    document.addEventListener('DOMContentLoaded', () =>
+                        cargarEditar(@TempData["AbrirModalEditar"]));
+                </text>
+        }
+    </script>
+    <partial name="_ValidationScriptsPartial" />
+}

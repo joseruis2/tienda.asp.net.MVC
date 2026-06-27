@@ -1,0 +1,458 @@
+﻿@model TiendaWeb.Areas.admin.ViewModel.ProveedoresIndexViewModel
+@{
+    Layout = "~/Areas/admin/Views/Shared/_LayoutAdmin.cshtml";
+    ViewData["Title"] = "Proveedores";
+}
+
+<style>
+    .prov-card {
+        border: none;
+        border-radius: 14px;
+        box-shadow: 0 1px 6px rgba(0,0,0,.07);
+    }
+
+    .form-label {
+        font-size: .825rem;
+        font-weight: 600;
+        color: #374151;
+    }
+
+    .form-control, .form-select {
+        font-size: .875rem;
+        background: #f8fafc;
+        border-color: #e2e8f0;
+    }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #1a56db;
+            box-shadow: 0 0 0 3px rgba(26,86,219,.12);
+            background: #fff;
+        }
+
+    .section-divider {
+        font-size: .7rem;
+        font-weight: 700;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        color: #64748b;
+        border-bottom: 1px solid #e2e8f0;
+        padding-bottom: .4rem;
+        margin-bottom: .75rem;
+    }
+</style>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show mb-4 py-2">
+        <i class="bi bi-check-circle me-1"></i> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show mb-4 py-2">
+        <i class="bi bi-x-circle me-1"></i> @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Header -->
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h5 class="mb-0 fw-bold">Proveedores</h5>
+        <span class="text-muted small">@Model.Lista.Count proveedores registrados</span>
+    </div>
+    <button class="btn btn-primary fw-semibold"
+            data-bs-toggle="modal" data-bs-target="#modalCrear">
+        <i class="bi bi-plus-lg me-1"></i> Nuevo proveedor
+    </button>
+</div>
+
+<!-- Tabla -->
+<div class="card prov-card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Proveedor</th>
+                        <th>Documento</th>
+                        <th>Contacto</th>
+                        <th>Crédito</th>
+                        <th>Estado</th>
+                        <th class="text-end pe-4">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in Model.Lista)
+                    {
+                        <tr>
+                            <td class="ps-4">
+                                <div class="fw-semibold" style="font-size:.875rem">
+                                    @p.RazonSocial
+                                </div>
+                                @if (!string.IsNullOrEmpty(p.NombreComercial))
+                                {
+                                    <div class="text-muted" style="font-size:.75rem">
+                                        @p.NombreComercial
+                                    </div>
+                                }
+                                <div style="font-size:.72rem; color:#94a3b8">
+                                    Cód: @p.Codigo
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-primary-subtle text-primary me-1">
+                                    @p.TipoDocumento
+                                </span>
+                                <span class="small">@p.RucDni</span>
+                            </td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(p.ContactoNombre))
+                                {
+                                    <div class="small fw-semibold">@p.ContactoNombre</div>
+                                }
+                                @if (!string.IsNullOrEmpty(p.Telefono))
+                                {
+                                    <div class="small text-muted">@p.Telefono</div>
+                                }
+                                @if (!string.IsNullOrEmpty(p.Email))
+                                {
+                                    <div class="small text-muted">@p.Email</div>
+                                }
+                                @if (string.IsNullOrEmpty(p.ContactoNombre) &&
+                                     string.IsNullOrEmpty(p.Telefono) &&
+                                     string.IsNullOrEmpty(p.Email))
+                                {
+                                    <span class="text-muted small">—</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="small">
+                                    <span class="text-muted">Días:</span>
+                                    <strong>@(p.DiasCredito ?? 0)</strong>
+                                </div>
+                                <div class="small">
+                                    <span class="text-muted">Límite:</span>
+                                    <strong>S/ @(p.LimiteCredito?.ToString("N2") ?? "0.00")</strong>
+                                </div>
+                                <div class="small">
+                                    <span class="text-muted">Saldo:</span>
+                                    <strong class="@(p.SaldoCredito > 0 ? "text-warning" : "")">
+                                        S/ @(p.SaldoCredito?.ToString("N2") ?? "0.00")
+                                    </strong>
+                                </div>
+                            </td>
+                            <td>
+                                @if (p.Estado == true)
+                                {
+                                    <span class="badge bg-success-subtle text-success">Activo</span>
+                                }
+                                else
+                                {
+
+                                    <span class="badge bg-secondary-subtle text-secondary">Inactivo</span>
+                                }
+                            </td>
+                            <td class="text-end pe-4">
+                                <button class="btn btn-sm btn-outline-primary me-1"
+                                        onclick="cargarEditar(@p.ProveedorId)">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <form asp-action="Delete" asp-controller="Proveedores"
+                                      asp-area="admin" method="post" class="d-inline"
+                                      onsubmit="return confirm('¿Desactivar a @p.RazonSocial?')">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@p.ProveedorId" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.Lista.Any())
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-5">
+                                <i class="bi bi-truck me-1"></i>No hay proveedores registrados
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ══ MODAL CREAR ══ -->
+<div class="modal fade" id="modalCrear" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h6 class="modal-title fw-bold">
+                    <i class="bi bi-plus-lg me-1 text-primary"></i>Nuevo proveedor
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form asp-action="Create" asp-controller="Proveedores"
+                      asp-area="admin" method="post">
+                    @Html.AntiForgeryToken()
+                    <div class="row g-3">
+
+                        <div class="col-12">
+                            <div class="section-divider">Datos principales</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Crear.Codigo" class="form-label"></label>
+                            <input asp-for="Crear.Codigo" class="form-control"
+                                   placeholder="PROV001" />
+                            <span asp-validation-for="Crear.Codigo" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-8">
+                            <label asp-for="Crear.RazonSocial" class="form-label"></label>
+                            <input asp-for="Crear.RazonSocial" class="form-control"
+                                   placeholder="Empresa SAC" />
+                            <span asp-validation-for="Crear.RazonSocial" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Crear.NombreComercial" class="form-label"></label>
+                            <input asp-for="Crear.NombreComercial" class="form-control"
+                                   placeholder="Nombre comercial" />
+                        </div>
+                        <div class="col-md-3">
+                            <label asp-for="Crear.TipoDocumento" class="form-label"></label>
+                            <select asp-for="Crear.TipoDocumento" class="form-select">
+                                <option value="RUC">RUC</option>
+                                <option value="DNI">DNI</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label asp-for="Crear.RucDni" class="form-label"></label>
+                            <input asp-for="Crear.RucDni" class="form-control"
+                                   placeholder="20000000001" />
+                            <span asp-validation-for="Crear.RucDni" class="text-danger small"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Crear.Direccion" class="form-label"></label>
+                            <input asp-for="Crear.Direccion" class="form-control"
+                                   placeholder="Av. Principal 123" />
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Crear.Telefono" class="form-label"></label>
+                            <input asp-for="Crear.Telefono" class="form-control"
+                                   placeholder="01-1234567" />
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Crear.Email" class="form-label"></label>
+                            <input asp-for="Crear.Email" type="email" class="form-control"
+                                   placeholder="proveedor@email.com" />
+                            <span asp-validation-for="Crear.Email" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="section-divider">Contacto</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Crear.ContactoNombre" class="form-label"></label>
+                            <input asp-for="Crear.ContactoNombre" class="form-control"
+                                   placeholder="Juan Pérez" />
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Crear.ContactoTelefono" class="form-label"></label>
+                            <input asp-for="Crear.ContactoTelefono" class="form-control"
+                                   placeholder="999999999" />
+                        </div>
+
+                        <div class="col-12">
+                            <div class="section-divider">Crédito</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Crear.DiasCredito" class="form-label"></label>
+                            <div class="input-group">
+                                <input asp-for="Crear.DiasCredito" type="number"
+                                       class="form-control" min="0" />
+                                <span class="input-group-text">días</span>
+                            </div>
+                            <span asp-validation-for="Crear.DiasCredito" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Crear.LimiteCredito" class="form-label"></label>
+                            <div class="input-group">
+                                <span class="input-group-text">S/</span>
+                                <input asp-for="Crear.LimiteCredito" type="number"
+                                       class="form-control" min="0" step="0.01" />
+                            </div>
+                            <span asp-validation-for="Crear.LimiteCredito" class="text-danger small"></span>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 px-0 pb-0 mt-3">
+                        <button type="button" class="btn btn-secondary"
+                                data-bs-dismiss="modal">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-primary fw-semibold">
+                            <i class="bi bi-floppy me-1"></i>Guardar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══ MODAL EDITAR ══ -->
+<div class="modal fade" id="modalEditar" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h6 class="modal-title fw-bold">
+                    <i class="bi bi-pencil me-1 text-primary"></i>Editar proveedor
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form asp-action="Edit" asp-controller="Proveedores"
+                      asp-area="admin" method="post" id="formEditar">
+                    @Html.AntiForgeryToken()
+                    <input asp-for="Editar.ProveedorId" type="hidden" />
+                    <div class="row g-3">
+
+                        <div class="col-12">
+                            <div class="section-divider">Datos principales</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Editar.Codigo" class="form-label"></label>
+                            <input asp-for="Editar.Codigo" class="form-control" />
+                            <span asp-validation-for="Editar.Codigo" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-8">
+                            <label asp-for="Editar.RazonSocial" class="form-label"></label>
+                            <input asp-for="Editar.RazonSocial" class="form-control" />
+                            <span asp-validation-for="Editar.RazonSocial" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Editar.NombreComercial" class="form-label"></label>
+                            <input asp-for="Editar.NombreComercial" class="form-control" />
+                        </div>
+                        <div class="col-md-3">
+                            <label asp-for="Editar.TipoDocumento" class="form-label"></label>
+                            <select asp-for="Editar.TipoDocumento" class="form-select">
+                                <option value="RUC">RUC</option>
+                                <option value="DNI">DNI</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label asp-for="Editar.RucDni" class="form-label"></label>
+                            <input asp-for="Editar.RucDni" class="form-control" />
+                            <span asp-validation-for="Editar.RucDni" class="text-danger small"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Editar.Direccion" class="form-label"></label>
+                            <input asp-for="Editar.Direccion" class="form-control" />
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Editar.Telefono" class="form-label"></label>
+                            <input asp-for="Editar.Telefono" class="form-control" />
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Editar.Email" class="form-label"></label>
+                            <input asp-for="Editar.Email" type="email" class="form-control" />
+                            <span asp-validation-for="Editar.Email" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="section-divider">Contacto</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Editar.ContactoNombre" class="form-label"></label>
+                            <input asp-for="Editar.ContactoNombre" class="form-control" />
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Editar.ContactoTelefono" class="form-label"></label>
+                            <input asp-for="Editar.ContactoTelefono" class="form-control" />
+                        </div>
+
+                        <div class="col-12">
+                            <div class="section-divider">Crédito y estado</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Editar.DiasCredito" class="form-label"></label>
+                            <div class="input-group">
+                                <input asp-for="Editar.DiasCredito" type="number"
+                                       class="form-control" min="0" />
+                                <span class="input-group-text">días</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Editar.LimiteCredito" class="form-label"></label>
+                            <div class="input-group">
+                                <span class="input-group-text">S/</span>
+                                <input asp-for="Editar.LimiteCredito" type="number"
+                                       class="form-control" min="0" step="0.01" />
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check form-switch">
+                                <input asp-for="Editar.Estado" class="form-check-input"
+                                       type="checkbox" role="switch" />
+                                <label asp-for="Editar.Estado"
+                                       class="form-check-label small fw-semibold"></label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 px-0 pb-0 mt-3">
+                        <button type="button" class="btn btn-secondary"
+                                data-bs-dismiss="modal">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-primary fw-semibold">
+                            <i class="bi bi-floppy me-1"></i>Actualizar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function cargarEditar(id) {
+            fetch(`/admin/Proveedores/GetEditar/${id}`)
+                .then(r => r.json())
+                .then(d => {
+                    const f = '#formEditar';
+                    document.querySelector(`${f} [name="Editar.ProveedorId"]`).value      = d.proveedorId;
+                    document.querySelector(`${f} [name="Editar.Codigo"]`).value           = d.codigo;
+                    document.querySelector(`${f} [name="Editar.RazonSocial"]`).value      = d.razonSocial;
+                    document.querySelector(`${f} [name="Editar.NombreComercial"]`).value  = d.nombreComercial  ?? '';
+                    document.querySelector(`${f} [name="Editar.TipoDocumento"]`).value    = d.tipoDocumento;
+                    document.querySelector(`${f} [name="Editar.RucDni"]`).value           = d.rucDni;
+                    document.querySelector(`${f} [name="Editar.Direccion"]`).value        = d.direccion        ?? '';
+                    document.querySelector(`${f} [name="Editar.Telefono"]`).value         = d.telefono         ?? '';
+                    document.querySelector(`${f} [name="Editar.Email"]`).value            = d.email            ?? '';
+                    document.querySelector(`${f} [name="Editar.ContactoNombre"]`).value   = d.contactoNombre   ?? '';
+                    document.querySelector(`${f} [name="Editar.ContactoTelefono"]`).value = d.contactoTelefono ?? '';
+                    document.querySelector(`${f} [name="Editar.DiasCredito"]`).value      = d.diasCredito;
+                    document.querySelector(`${f} [name="Editar.LimiteCredito"]`).value    = d.limiteCredito;
+                    document.querySelector(`${f} [name="Editar.Estado"]`).checked         = d.estado;
+                    new bootstrap.Modal('#modalEditar').show();
+                });
+        }
+
+        @if (TempData["AbrirModalCrear"] != null)
+        {
+                <text>new bootstrap.Modal('#modalCrear').show();</text>
+        }
+        @if (TempData["AbrirModalEditar"] != null)
+        {
+                <text>
+                    document.addEventListener('DOMContentLoaded', () =>
+                        cargarEditar(@TempData["AbrirModalEditar"]));
+                </text>
+        }
+    </script>
+    <partial name="_ValidationScriptsPartial" />
+}

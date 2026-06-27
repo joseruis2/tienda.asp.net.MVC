@@ -36,9 +36,25 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<TiendaWeb.Areas.admin.service.IDashboardService,
                             TiendaWeb.Areas.admin.service.DashboardService>();
 
+// configuracion
 builder.Services.AddScoped<IConfiguracionRepository, ConfiguracionRepository>();
 builder.Services.AddScoped<TiendaWeb.Areas.admin.service.IConfiguracionService,
                             TiendaWeb.Areas.admin.service.ConfiguracionService>();
+
+//usuarios
+builder.Services.AddScoped<IUsuarioAdminRepository, UsuarioAdminRepository>();
+builder.Services.AddScoped<TiendaWeb.Areas.admin.service.IUsuarioAdminService,
+                            TiendaWeb.Areas.admin.service.UsuarioAdminService>();
+
+//categoria
+builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
+builder.Services.AddScoped<TiendaWeb.Areas.admin.service.ICategoriaService,
+                            TiendaWeb.Areas.admin.service.CategoriaService>();
+
+//provedor
+builder.Services.AddScoped<IProveedorRepository, ProveedorRepository>();
+builder.Services.AddScoped<TiendaWeb.Areas.admin.service.IProveedorService,
+                            TiendaWeb.Areas.admin.service.ProveedorService>();
 
 // SERVICES
 builder.Services.AddSession(o => {
