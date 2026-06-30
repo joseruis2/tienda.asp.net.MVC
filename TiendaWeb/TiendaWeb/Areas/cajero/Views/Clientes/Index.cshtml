@@ -1,0 +1,434 @@
+﻿@model TiendaWeb.Areas.cajero.ViewModel.ClientesCajeroIndexViewModel
+@{
+    Layout = "~/Areas/cajero/Views/Shared/_LayoutCajero.cshtml";
+    ViewData["Title"] = "Clientes";
+}
+
+<link rel="stylesheet" href="~/css/cajero/Clientes/index.css" />
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show mb-4 py-2">
+        <i class="bi bi-check-circle me-1"></i> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show mb-4 py-2">
+        <i class="bi bi-x-circle me-1"></i> @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Header -->
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h5 class="mb-0 fw-bold">Clientes</h5>
+        <span class="text-muted small">
+            @Model.Total resultado(s)
+            @if (!string.IsNullOrEmpty(Model.Busqueda))
+            {
+                <span>para "<strong>@Model.Busqueda</strong>"</span>
+            }
+        </span>
+    </div>
+    <button class="btn fw-semibold"
+            style="background:#6366f1; color:#fff"
+            data-bs-toggle="modal" data-bs-target="#modalCrear">
+        <i class="bi bi-person-plus me-1"></i>Nuevo cliente
+    </button>
+</div>
+
+<!-- Buscador -->
+<form method="get" class="card cli-card p-3 mb-4">
+    <div class="row g-2 align-items-end">
+        <div class="col">
+            <div class="input-group">
+                <span class="input-group-text">
+                    <i class="bi bi-search"></i>
+                </span>
+                <input type="text" name="busqueda" class="form-control"
+                       placeholder="Buscar por nombre, documento, teléfono o código..."
+                       value="@Model.Busqueda" autofocus />
+            </div>
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn fw-semibold"
+                    style="background:#6366f1; color:#fff">
+                Buscar
+            </button>
+        </div>
+        @if (!string.IsNullOrEmpty(Model.Busqueda))
+        {
+            <div class="col-auto">
+                <a asp-area="cajero" asp-controller="Clientes" asp-action="Index"
+                   class="btn btn-outline-secondary">
+                    <i class="bi bi-x"></i> Limpiar
+                </a>
+            </div>
+        }
+    </div>
+</form>
+
+<!-- Tabla -->
+<div class="card cli-card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Cliente</th>
+                        <th>Documento</th>
+                        <th>Contacto</th>
+                        <th>Puntos</th>
+                        <th>Total compras</th>
+                        <th class="text-end pe-4">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var c in Model.Lista)
+                    {
+                        var inicial = c.NombreCompleto.Length > 0
+                            ? c.NombreCompleto[0].ToString().ToUpper() : "C";
+                        var esEmpresa = c.TipoDocumento == "RUC";
+                        <tr>
+                            <td class="ps-4">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="avatar-cli"
+                                         style="background:@(esEmpresa ? "#7c3aed" : "#6366f1")">
+                                        @inicial
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold" style="font-size:.875rem">
+                                            @c.NombreCompleto
+                                        </div>
+                                        @if (!string.IsNullOrEmpty(c.Codigo))
+                                        {
+                                            <div class="text-muted" style="font-size:.72rem">
+                                                Cód: @c.Codigo
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-primary-subtle text-primary me-1"
+                                      style="font-size:.7rem">
+                                    @c.TipoDocumento
+                                </span>
+                                <span class="small">@(c.NumeroDocumento ?? "—")</span>
+                            </td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(c.Telefono))
+                                {
+                                    <div class="small">
+                                        <i class="bi bi-telephone me-1 text-muted"></i>
+                                        @c.Telefono
+                                    </div>
+                                }
+                                @if (!string.IsNullOrEmpty(c.Email))
+                                {
+                                    <div class="small text-muted">@c.Email</div>
+                                }
+                                @if (string.IsNullOrEmpty(c.Telefono) &&
+                                     string.IsNullOrEmpty(c.Email))
+                                {
+                                    <span class="text-muted small">—</span>
+                                }
+                            </td>
+                            <td>
+                                <span class="badge bg-warning-subtle text-warning">
+                                    <i class="bi bi-star-fill me-1"
+                                       style="font-size:.65rem"></i>
+                                    @(c.PuntosAcumulados ?? 0)
+                                </span>
+                            </td>
+                            <td class="fw-semibold small text-success">
+                                S/ @(c.TotalCompras?.ToString("N2") ?? "0.00")
+                            </td>
+                            <td class="text-end pe-4">
+                                <button class="btn btn-sm btn-outline-primary"
+                                        onclick="cargarEditar(@c.ClienteId)"
+                                        title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.Lista.Any())
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-5">
+                                @if (!string.IsNullOrEmpty(Model.Busqueda))
+                                {
+                                    <div>
+                                        <i class="bi bi-search d-block mb-2"
+                                           style="font-size:2rem"></i>
+                                        Sin resultados para
+                                        "<strong>@Model.Busqueda</strong>"
+                                        <div class="mt-2">
+                                            <button class="btn btn-sm fw-semibold"
+                                                    style="background:#6366f1;color:#fff"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#modalCrear">
+                                                <i class="bi bi-person-plus me-1"></i>
+                                                Registrar nuevo cliente
+                                            </button>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div>
+                                        <i class="bi bi-people d-block mb-2"
+                                           style="font-size:2rem"></i>
+                                        Busca un cliente o registra uno nuevo
+                                    </div>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ══ MODAL CREAR ══ -->
+<div class="modal fade" id="modalCrear" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h6 class="modal-title fw-bold">
+                    <i class="bi bi-person-plus me-1" style="color:#6366f1"></i>
+                    Nuevo cliente
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form asp-action="Create" asp-controller="Clientes"
+                      asp-area="cajero" method="post">
+                    @Html.AntiForgeryToken()
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <div class="section-divider">Identificación</div>
+                        </div>
+                        <div class="col-md-5">
+                            <label asp-for="Crear.TipoDocumento" class="form-label"></label>
+                            <select asp-for="Crear.TipoDocumento" class="form-select"
+                                    onchange="toggleCamposCrear(this.value)">
+                                <option value="DNI">DNI</option>
+                                <option value="RUC">RUC</option>
+                                <option value="CE">CE</option>
+                                <option value="PASAPORTE">PASAPORTE</option>
+                                <option value="NINGUNO">NINGUNO</option>
+                            </select>
+                        </div>
+                        <div class="col-md-7">
+                            <label asp-for="Crear.NumeroDocumento" class="form-label"></label>
+                            <input asp-for="Crear.NumeroDocumento" class="form-control"
+                                   placeholder="N° de documento" />
+                        </div>
+
+                        <!-- Persona natural -->
+                        <div id="crear-natural" class="col-12">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label asp-for="Crear.Nombres" class="form-label"></label>
+                                    <input asp-for="Crear.Nombres" class="form-control"
+                                           placeholder="Juan" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="Crear.Apellidos" class="form-label"></label>
+                                    <input asp-for="Crear.Apellidos" class="form-control"
+                                           placeholder="Pérez" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Empresa -->
+                        <div id="crear-empresa" class="col-12" style="display:none">
+                            <label asp-for="Crear.RazonSocial" class="form-label"></label>
+                            <input asp-for="Crear.RazonSocial" class="form-control"
+                                   placeholder="Empresa SAC" />
+                        </div>
+
+                        <div class="col-12">
+                            <div class="section-divider">Contacto</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Crear.Telefono" class="form-label"></label>
+                            <input asp-for="Crear.Telefono" class="form-control"
+                                   placeholder="999999999" />
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Crear.Email" class="form-label"></label>
+                            <input asp-for="Crear.Email" type="email" class="form-control"
+                                   placeholder="email@ejemplo.com" />
+                            <span asp-validation-for="Crear.Email"
+                                  class="text-danger small"></span>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 px-0 pb-0 mt-3">
+                        <button type="button" class="btn btn-secondary"
+                                data-bs-dismiss="modal">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn fw-semibold"
+                                style="background:#6366f1; color:#fff">
+                            <i class="bi bi-floppy me-1"></i>Guardar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══ MODAL EDITAR ══ -->
+<div class="modal fade" id="modalEditar" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h6 class="modal-title fw-bold">
+                    <i class="bi bi-pencil me-1" style="color:#6366f1"></i>
+                    Editar cliente
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form asp-action="Edit" asp-controller="Clientes"
+                      asp-area="cajero" method="post" id="formEditar">
+                    @Html.AntiForgeryToken()
+                    <input asp-for="Editar.ClienteId" type="hidden" />
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <div class="section-divider">Identificación</div>
+                        </div>
+                        <div class="col-md-5">
+                            <label asp-for="Editar.TipoDocumento" class="form-label"></label>
+                            <select asp-for="Editar.TipoDocumento" class="form-select"
+                                    onchange="toggleCamposEditar(this.value)">
+                                <option value="DNI">DNI</option>
+                                <option value="RUC">RUC</option>
+                                <option value="CE">CE</option>
+                                <option value="PASAPORTE">PASAPORTE</option>
+                                <option value="NINGUNO">NINGUNO</option>
+                            </select>
+                        </div>
+                        <div class="col-md-7">
+                            <label asp-for="Editar.NumeroDocumento" class="form-label"></label>
+                            <input asp-for="Editar.NumeroDocumento" class="form-control" />
+                        </div>
+
+                        <!-- Persona natural -->
+                        <div id="editar-natural" class="col-12">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label asp-for="Editar.Nombres" class="form-label"></label>
+                                    <input asp-for="Editar.Nombres" class="form-control" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="Editar.Apellidos" class="form-label"></label>
+                                    <input asp-for="Editar.Apellidos" class="form-control" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Empresa -->
+                        <div id="editar-empresa" class="col-12" style="display:none">
+                            <label asp-for="Editar.RazonSocial" class="form-label"></label>
+                            <input asp-for="Editar.RazonSocial" class="form-control" />
+                        </div>
+
+                        <div class="col-12">
+                            <div class="section-divider">Contacto</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Editar.Telefono" class="form-label"></label>
+                            <input asp-for="Editar.Telefono" class="form-control" />
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Editar.Email" class="form-label"></label>
+                            <input asp-for="Editar.Email" type="email" class="form-control" />
+                            <span asp-validation-for="Editar.Email"
+                                  class="text-danger small"></span>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 px-0 pb-0 mt-3">
+                        <button type="button" class="btn btn-secondary"
+                                data-bs-dismiss="modal">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn fw-semibold"
+                                style="background:#6366f1; color:#fff">
+                            <i class="bi bi-floppy me-1"></i>Actualizar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Toggle campos crear
+        function toggleCamposCrear(tipo) {
+            document.getElementById('crear-natural').style.display =
+                tipo === 'RUC' ? 'none' : 'block';
+            document.getElementById('crear-empresa').style.display =
+                tipo === 'RUC' ? 'block' : 'none';
+        }
+
+        // Toggle campos editar
+        function toggleCamposEditar(tipo) {
+            document.getElementById('editar-natural').style.display =
+                tipo === 'RUC' ? 'none' : 'block';
+            document.getElementById('editar-empresa').style.display =
+                tipo === 'RUC' ? 'block' : 'none';
+        }
+
+        // Cargar datos editar
+        function cargarEditar(id) {
+            fetch(`/cajero/Clientes/GetEditar/${id}`)
+                .then(r => r.json())
+                .then(d => {
+                    const f = '#formEditar';
+                    document.querySelector(`${f} [name="Editar.ClienteId"]`).value
+                        = d.clienteId;
+                    document.querySelector(`${f} [name="Editar.TipoDocumento"]`).value
+                        = d.tipoDocumento;
+                    document.querySelector(`${f} [name="Editar.NumeroDocumento"]`).value
+                        = d.numeroDocumento ?? '';
+                    document.querySelector(`${f} [name="Editar.Nombres"]`).value
+                        = d.nombres ?? '';
+                    document.querySelector(`${f} [name="Editar.Apellidos"]`).value
+                        = d.apellidos ?? '';
+                    document.querySelector(`${f} [name="Editar.RazonSocial"]`).value
+                        = d.razonSocial ?? '';
+                    document.querySelector(`${f} [name="Editar.Telefono"]`).value
+                        = d.telefono ?? '';
+                    document.querySelector(`${f} [name="Editar.Email"]`).value
+                        = d.email ?? '';
+
+                    toggleCamposEditar(d.tipoDocumento);
+                    new bootstrap.Modal('#modalEditar').show();
+                });
+        }
+
+        @if (TempData["AbrirModalCrear"] != null)
+        {
+                <text>new bootstrap.Modal('#modalCrear').show();</text>
+        }
+        @if (TempData["AbrirModalEditar"] != null)
+        {
+                <text>
+                    document.addEventListener('DOMContentLoaded', () =>
+                        cargarEditar(@TempData["AbrirModalEditar"]));
+                </text>
+        }
+    </script>
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,465 @@
+CREATE DATABASE IF NOT EXISTS tienda
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
+
+-- ============================================================
+-- 1. CONFIGURACION NEGOCIO
+-- (Va primero porque otras tablas pueden referenciarla)
+-- ============================================================ $$$$
+CREATE TABLE configuracion_negocio (
+  config_id              INT AUTO_INCREMENT PRIMARY KEY,
+  nombre_negocio         VARCHAR(256) NOT NULL,
+  ruc                    VARCHAR(11),
+  direccion              VARCHAR(256),
+  distrito               VARCHAR(100),
+  provincia              VARCHAR(100),
+  departamento           VARCHAR(100),
+  telefono               VARCHAR(20),
+  email                  VARCHAR(100),
+  mensaje_ticket         TEXT,
+  logo_url               VARCHAR(256),
+  igv_porcentaje         DECIMAL(5,2)  DEFAULT 18.00,
+  moneda                 VARCHAR(3)    DEFAULT 'PEN',
+  simbolo_moneda         VARCHAR(5)    DEFAULT 'S/',
+  -- Series de comprobantes
+  serie_ticket           VARCHAR(4)    DEFAULT 'T001',
+  serie_boleta           VARCHAR(4)    DEFAULT 'B001',
+  serie_factura          VARCHAR(4)    DEFAULT 'F001',
+  correlativo_ticket     INT           DEFAULT 1,
+  correlativo_boleta     INT           DEFAULT 1,
+  correlativo_factura    INT           DEFAULT 1,
+  -- Series de compras
+  serie_orden_compra     VARCHAR(4)    DEFAULT 'OC01',
+  -- Configuración general
+  dias_devolucion        INT           DEFAULT 7,
+  fecha_actualizacion    TIMESTAMP     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+ 
+-- ============================================================ $$$$
+-- 2. USUARIOS
+-- ============================================================
+CREATE TABLE usuarios (
+  usuario_id      INT AUTO_INCREMENT PRIMARY KEY,
+  username        VARCHAR(50)  NOT NULL UNIQUE,
+  password        VARCHAR(512) NOT NULL,              -- BCrypt hash
+  nombres         VARCHAR(100) NOT NULL,
+  apellidos       VARCHAR(100) NOT NULL,
+  dni             VARCHAR(8),
+  email           VARCHAR(100),
+  telefono        VARCHAR(20),
+  rol             ENUM('ADMIN','CAJERO','VENDEDOR','ALMACENERO') DEFAULT 'CAJERO',
+  estado          TINYINT(1)   DEFAULT 1,
+  fecha_creacion  TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+  ultimo_acceso   TIMESTAMP    NULL,
+  creado_por      INT          NULL,                  -- FK a usuarios (auto-referencia)
+  FOREIGN KEY (creado_por) REFERENCES usuarios(usuario_id)
+);
+ 
+-- ============================================================
+-- 3. CATEGORIAS
+-- ============================================================ $$$$
+CREATE TABLE categorias (
+  categoria_id   INT AUTO_INCREMENT PRIMARY KEY,
+  nombre         VARCHAR(256) NOT NULL UNIQUE,
+  descripcion    VARCHAR(256),
+  imagen         VARCHAR(255),
+  estado         TINYINT(1)   DEFAULT 1,
+  fecha_creacion TIMESTAMP    DEFAULT CURRENT_TIMESTAMP
+);
+ 
+-- ============================================================
+-- 4. PROVEEDORES
+-- ============================================================ $$$$
+CREATE TABLE proveedores (
+  proveedor_id      INT AUTO_INCREMENT PRIMARY KEY,
+  codigo            VARCHAR(20)  NOT NULL UNIQUE,
+  razon_social      VARCHAR(256) NOT NULL,
+  nombre_comercial  VARCHAR(256),
+  tipo_documento    ENUM('RUC','DNI') DEFAULT 'RUC',
+  ruc_dni           VARCHAR(20)  NOT NULL,
+  direccion         VARCHAR(256),
+  telefono          VARCHAR(20),
+  email             VARCHAR(100),
+  contacto_nombre   VARCHAR(100),
+  contacto_telefono VARCHAR(20),
+  dias_credito      INT          DEFAULT 0,
+  limite_credito    DECIMAL(10,2) DEFAULT 0.00,
+  saldo_credito     DECIMAL(10,2) DEFAULT 0.00,      -- Saldo actual usado
+  estado            TINYINT(1)   DEFAULT 1,
+  fecha_creacion    TIMESTAMP    DEFAULT CURRENT_TIMESTAMP
+);
+ 
+-- ============================================================
+-- 5. PRODUCTOS
+-- ============================================================ $$$$
+CREATE TABLE productos (
+  producto_id       INT AUTO_INCREMENT PRIMARY KEY,
+  codigo            VARCHAR(50)  NOT NULL UNIQUE,
+  codigo_barras     VARCHAR(50)  UNIQUE,
+  nombre            VARCHAR(256) NOT NULL,
+  descripcion       VARCHAR(1000),
+  categoria_id      INT          NOT NULL,
+  proveedor_id      INT,
+  -- Precios
+  precio_costo      DECIMAL(10,2) DEFAULT 0.00,      -- Precio de compra
+  precio            DECIMAL(10,2) DEFAULT 0.00,      -- Precio venta minorista
+  precio_mayorista  DECIMAL(10,2) DEFAULT 0.00,      -- Precio venta mayorista
+  -- Stock
+  stock_actual      INT          DEFAULT 0,
+  stock_minimo      INT          DEFAULT 5,
+  stock_maximo      INT          DEFAULT 100,
+  -- Datos adicionales
+  unidad_medida     VARCHAR(20)  DEFAULT 'Unidad',
+  peso              DECIMAL(8,2) DEFAULT 0.00,
+  ubicacion         VARCHAR(50),
+  fecha_vencimiento DATE,
+  imagen_principal  VARCHAR(256),
+  estado            TINYINT(1)   DEFAULT 1,
+  fecha_creacion    TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (categoria_id) REFERENCES categorias(categoria_id),
+  FOREIGN KEY (proveedor_id) REFERENCES proveedores(proveedor_id)
+);
+ 
+-- ============================================================
+-- 6. CLIENTES
+-- ============================================================ $$$$$$$
+CREATE TABLE clientes (
+  cliente_id        INT AUTO_INCREMENT PRIMARY KEY,
+  codigo            VARCHAR(20)  UNIQUE,
+  tipo_documento    ENUM('DNI','RUC','CE','PASAPORTE','NINGUNO') DEFAULT 'DNI',
+  numero_documento  VARCHAR(20),
+  nombres           VARCHAR(100),
+  apellidos         VARCHAR(100),
+  razon_social      VARCHAR(256),                    -- Para RUC / empresas
+  direccion         VARCHAR(256),
+  telefono          VARCHAR(20),
+  email             VARCHAR(100),
+  fecha_nacimiento  DATE,
+  puntos_acumulados INT          DEFAULT 0,
+  total_compras     DECIMAL(12,2) DEFAULT 0.00,      -- Histórico de compras
+  estado            TINYINT(1)   DEFAULT 1,
+  fecha_creacion    TIMESTAMP    DEFAULT CURRENT_TIMESTAMP
+);
+ 
+-- ============================================================
+-- 7. CAJAS
+-- ============================================================ $$$$$$
+CREATE TABLE cajas (
+  caja_id        INT AUTO_INCREMENT PRIMARY KEY,
+  nombre         VARCHAR(50) NOT NULL,
+  numero         INT         NOT NULL UNIQUE,
+  activa         TINYINT(1)  DEFAULT 1,              -- Caja habilitada en el sistema
+  estado         ENUM('ABIERTA','CERRADA') DEFAULT 'CERRADA',
+  -- Sesión actual (referencia a sesiones_caja)
+  sesion_actual  INT         NULL
+);
+ 
+-- ============================================================ $$$$$$$
+-- 8. SESIONES DE CAJA
+-- (Permite múltiples cajeros y turnos en la misma caja)
+-- ============================================================
+CREATE TABLE sesiones_caja (
+  sesion_id      INT AUTO_INCREMENT PRIMARY KEY,
+  caja_id        INT         NOT NULL,
+  usuario_id     INT         NOT NULL,
+  monto_apertura DECIMAL(10,2) DEFAULT 0.00,
+  monto_cierre   DECIMAL(10,2) DEFAULT NULL,
+  monto_sistema  DECIMAL(10,2) DEFAULT NULL,         -- Lo que el sistema calculó
+  diferencia     DECIMAL(10,2) DEFAULT NULL,         -- monto_cierre - monto_sistema
+  estado         ENUM('ABIERTA','CERRADA') DEFAULT 'ABIERTA',
+  fecha_apertura TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+  fecha_cierre   TIMESTAMP    NULL,
+  observaciones  TEXT,
+  FOREIGN KEY (caja_id)    REFERENCES cajas(caja_id),
+  FOREIGN KEY (usuario_id) REFERENCES usuarios(usuario_id)
+);
+ 
+-- FK de cajas a sesiones (se agrega después de crear sesiones_caja)
+ALTER TABLE cajas
+  ADD CONSTRAINT fk_caja_sesion
+  FOREIGN KEY (sesion_actual) REFERENCES sesiones_caja(sesion_id);
+ 
+-- ============================================================
+-- 9. VENTAS
+-- ============================================================ falta
+CREATE TABLE ventas (
+  venta_id            INT AUTO_INCREMENT PRIMARY KEY,
+  numero_ticket       VARCHAR(20)  NOT NULL UNIQUE,
+  tipo_comprobante    ENUM('TICKET','BOLETA','FACTURA') DEFAULT 'TICKET',
+  serie               VARCHAR(4)   DEFAULT 'T001',
+  numero_correlativo  INT          NOT NULL,
+  fecha_venta         TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+  -- Cliente
+  cliente_id          INT,
+  cliente_nombre      VARCHAR(200),
+  cliente_documento   VARCHAR(20),
+  -- Montos
+  subtotal            DECIMAL(10,2) DEFAULT 0.00,
+  igv                 DECIMAL(10,2) DEFAULT 0.00,
+  descuento           DECIMAL(10,2) DEFAULT 0.00,
+  total               DECIMAL(10,2) NOT NULL,
+  -- Pago
+  metodo_pago         ENUM('EFECTIVO','TARJETA','YAPE','PLIN','TRANSFERENCIA','MIXTO') DEFAULT 'EFECTIVO',
+  monto_pagado        DECIMAL(10,2) DEFAULT 0.00,
+  vuelto              DECIMAL(10,2) DEFAULT 0.00,
+  -- Relaciones
+  usuario_id          INT,
+  caja_id             INT,
+  sesion_id           INT,
+  -- Estado
+  estado              ENUM('COMPLETADA','ANULADA','PENDIENTE') DEFAULT 'COMPLETADA',
+  observaciones       TEXT,
+  -- Anulación
+  fecha_anulacion     TIMESTAMP    NULL,
+  motivo_anulacion    VARCHAR(256),
+  usuario_anulacion   INT          NULL,
+  FOREIGN KEY (cliente_id)         REFERENCES clientes(cliente_id),
+  FOREIGN KEY (usuario_id)         REFERENCES usuarios(usuario_id),
+  FOREIGN KEY (caja_id)            REFERENCES cajas(caja_id),
+  FOREIGN KEY (sesion_id)          REFERENCES sesiones_caja(sesion_id),
+  FOREIGN KEY (usuario_anulacion)  REFERENCES usuarios(usuario_id)
+);
+ 
+-- ============================================================ $$$$
+-- 10. DETALLE VENTAS
+-- ============================================================
+CREATE TABLE detalle_ventas (
+  detalle_id      INT AUTO_INCREMENT PRIMARY KEY,
+  venta_id        INT           NOT NULL,
+  producto_id     INT           NOT NULL,
+  codigo_barras   VARCHAR(50),
+  nombre_producto VARCHAR(256)  NOT NULL,             -- Snapshot del nombre al momento de venta
+  cantidad        DECIMAL(10,3) DEFAULT 1.000,
+  precio_unitario DECIMAL(10,2) NOT NULL,
+  descuento       DECIMAL(10,2) DEFAULT 0.00,
+  subtotal        DECIMAL(10,2) NOT NULL,
+  igv             DECIMAL(10,2) DEFAULT 0.00,
+  total           DECIMAL(10,2) NOT NULL,
+  FOREIGN KEY (venta_id)    REFERENCES ventas(venta_id) ON DELETE CASCADE,
+  FOREIGN KEY (producto_id) REFERENCES productos(producto_id)
+);
+ 
+-- ============================================================
+-- 11. COMPRAS (Órdenes de compra a proveedores)
+-- ============================================================ $$$$
+CREATE TABLE compras (
+  compra_id          INT AUTO_INCREMENT PRIMARY KEY,
+  numero_orden       VARCHAR(20)  NOT NULL UNIQUE,
+  serie              VARCHAR(4)   DEFAULT 'OC01',
+  numero_correlativo INT          NOT NULL,
+  proveedor_id       INT          NOT NULL,
+  -- Comprobante del proveedor
+  tipo_doc_proveedor VARCHAR(20),                    -- Factura, Boleta, etc.
+  nro_doc_proveedor  VARCHAR(30),
+  -- Fechas
+  fecha_compra       TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+  fecha_entrega      DATE,
+  -- Montos
+  subtotal           DECIMAL(10,2) DEFAULT 0.00,
+  igv                DECIMAL(10,2) DEFAULT 0.00,
+  descuento          DECIMAL(10,2) DEFAULT 0.00,
+  total              DECIMAL(10,2) NOT NULL,
+  -- Pago
+  condicion_pago     ENUM('CONTADO','CREDITO') DEFAULT 'CONTADO',
+  fecha_vencimiento  DATE,
+  -- Estado
+  estado             ENUM('PENDIENTE','RECIBIDA','PARCIAL','ANULADA') DEFAULT 'PENDIENTE',
+  -- Relaciones
+  usuario_id         INT,
+  observaciones      TEXT,
+  FOREIGN KEY (proveedor_id) REFERENCES proveedores(proveedor_id),
+  FOREIGN KEY (usuario_id)   REFERENCES usuarios(usuario_id)
+);
+ 
+-- ============================================================
+-- 12. DETALLE COMPRAS
+-- ============================================================
+CREATE TABLE detalle_compras (
+  detalle_id      INT AUTO_INCREMENT PRIMARY KEY,
+  compra_id       INT           NOT NULL,
+  producto_id     INT           NOT NULL,
+  nombre_producto VARCHAR(256)  NOT NULL,             -- Snapshot
+  cantidad        DECIMAL(10,3) NOT NULL,
+  precio_unitario DECIMAL(10,2) NOT NULL,
+  descuento       DECIMAL(10,2) DEFAULT 0.00,
+  subtotal        DECIMAL(10,2) NOT NULL,
+  igv             DECIMAL(10,2) DEFAULT 0.00,
+  total           DECIMAL(10,2) NOT NULL,
+  cantidad_recibida DECIMAL(10,3) DEFAULT 0.000,     -- Para recepción parcial
+  FOREIGN KEY (compra_id)   REFERENCES compras(compra_id) ON DELETE CASCADE,
+  FOREIGN KEY (producto_id) REFERENCES productos(producto_id)
+);
+ 
+-- ============================================================
+-- 13. KARDEX
+-- (Trazabilidad completa de movimientos de inventario)
+-- ============================================================ $$$$
+CREATE TABLE kardex (
+  kardex_id        INT AUTO_INCREMENT PRIMARY KEY,
+  producto_id      INT           NOT NULL,
+  usuario_id       INT           NOT NULL,
+  tipo             ENUM('ENTRADA','SALIDA','AJUSTE') NOT NULL,
+  origen           ENUM('COMPRA','VENTA','AJUSTE_MANUAL','DEVOLUCION','INICIAL') NOT NULL,
+  referencia_id    INT           NULL,                -- ID de venta o compra origen
+  referencia_tipo  VARCHAR(20)   NULL,                -- 'VENTA' o 'COMPRA'
+  entrada          DECIMAL(10,3) DEFAULT 0.000,
+  salida           DECIMAL(10,3) DEFAULT 0.000,
+  stock_anterior   DECIMAL(10,3) NOT NULL,
+  stock_resultante DECIMAL(10,3) NOT NULL,
+  costo_unitario   DECIMAL(10,2) DEFAULT 0.00,
+  descripcion      VARCHAR(255),
+  fecha_movimiento TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (producto_id) REFERENCES productos(producto_id),
+  FOREIGN KEY (usuario_id)  REFERENCES usuarios(usuario_id)
+);
+ 
+-- ============================================================
+-- 14. MOVIMIENTOS CAJA
+-- ============================================================ falta
+CREATE TABLE movimientos_caja (
+  movimiento_id   INT AUTO_INCREMENT PRIMARY KEY,
+  sesion_id       INT          NOT NULL,
+  caja_id         INT          NOT NULL,
+  tipo_movimiento ENUM('APERTURA','VENTA','RETIRO','INGRESO','CIERRE') NOT NULL,
+  venta_id        INT          NULL,
+  monto           DECIMAL(10,2) NOT NULL,
+  monto_anterior  DECIMAL(10,2) DEFAULT 0.00,
+  monto_nuevo     DECIMAL(10,2) DEFAULT 0.00,
+  descripcion     VARCHAR(256),
+  usuario_id      INT,
+  fecha_movimiento TIMESTAMP   DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (sesion_id)  REFERENCES sesiones_caja(sesion_id),
+  FOREIGN KEY (caja_id)    REFERENCES cajas(caja_id),
+  FOREIGN KEY (venta_id)   REFERENCES ventas(venta_id),
+  FOREIGN KEY (usuario_id) REFERENCES usuarios(usuario_id)
+);
+ 
+-- ============================================================
+-- 15. PROMOCIONES Y DESCUENTOS
+-- ============================================================ $$$$
+CREATE TABLE promociones (
+  promo_id       INT AUTO_INCREMENT PRIMARY KEY,
+  nombre         VARCHAR(100) NOT NULL,
+  descripcion    VARCHAR(256),
+  tipo           ENUM('PORCENTAJE','MONTO_FIJO','2X1','COMBO') NOT NULL,
+  valor          DECIMAL(10,2) NOT NULL,              -- % o monto fijo
+  -- Alcance
+  aplica_a       ENUM('PRODUCTO','CATEGORIA','TODA_VENTA') DEFAULT 'PRODUCTO',
+  producto_id    INT          NULL,
+  categoria_id   INT          NULL,
+  -- Vigencia
+  fecha_inicio   DATE,
+  fecha_fin      DATE,
+  hora_inicio    TIME         NULL,
+  hora_fin       TIME         NULL,
+  -- Condiciones
+  monto_minimo   DECIMAL(10,2) DEFAULT 0.00,
+  cantidad_minima INT          DEFAULT 1,
+  -- Control
+  estado         TINYINT(1)   DEFAULT 1,
+  fecha_creacion TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (producto_id)  REFERENCES productos(producto_id),
+  FOREIGN KEY (categoria_id) REFERENCES categorias(categoria_id)
+);
+ 
+-- ============================================================
+-- 16. DEVOLUCIONES
+-- ============================================================ $$$$
+CREATE TABLE devoluciones (
+  devolucion_id  INT AUTO_INCREMENT PRIMARY KEY,
+  numero         VARCHAR(20)  NOT NULL UNIQUE,
+  venta_id       INT          NOT NULL,
+  fecha          TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+  motivo         VARCHAR(256),
+  total_devuelto DECIMAL(10,2) NOT NULL,
+  tipo_devolucion ENUM('EFECTIVO','CAMBIO_PRODUCTO','NOTA_CREDITO') DEFAULT 'EFECTIVO',
+  usuario_id     INT,
+  estado         ENUM('PROCESADA','ANULADA') DEFAULT 'PROCESADA',
+  FOREIGN KEY (venta_id)   REFERENCES ventas(venta_id),
+  FOREIGN KEY (usuario_id) REFERENCES usuarios(usuario_id)
+);
+ 
+CREATE TABLE detalle_devoluciones (
+  detalle_id      INT AUTO_INCREMENT PRIMARY KEY,
+  devolucion_id   INT           NOT NULL,
+  producto_id     INT           NOT NULL,
+  nombre_producto VARCHAR(256)  NOT NULL,
+  cantidad        DECIMAL(10,3) NOT NULL,
+  precio_unitario DECIMAL(10,2) NOT NULL,
+  total           DECIMAL(10,2) NOT NULL,
+  regresa_stock   TINYINT(1)    DEFAULT 1,            -- ¿Se devuelve al inventario?
+  FOREIGN KEY (devolucion_id) REFERENCES devoluciones(devolucion_id) ON DELETE CASCADE,
+  FOREIGN KEY (producto_id)   REFERENCES productos(producto_id)
+);
+ 
+-- =======================================================================================================================
+-- ÍNDICES PARA RENDIMIENTO
+-- =======================================================================================================================
+ 
+-- Productos
+CREATE INDEX idx_productos_categoria   ON productos(categoria_id);
+CREATE INDEX idx_productos_proveedor   ON productos(proveedor_id);
+CREATE INDEX idx_productos_codigo_barras ON productos(codigo_barras);
+CREATE INDEX idx_productos_estado      ON productos(estado);
+ 
+-- Ventas
+CREATE INDEX idx_ventas_fecha          ON ventas(fecha_venta);
+CREATE INDEX idx_ventas_cliente        ON ventas(cliente_id);
+CREATE INDEX idx_ventas_usuario        ON ventas(usuario_id);
+CREATE INDEX idx_ventas_estado         ON ventas(estado);
+CREATE INDEX idx_ventas_caja           ON ventas(caja_id);
+ 
+-- Detalle ventas
+CREATE INDEX idx_detalle_ventas_venta   ON detalle_ventas(venta_id);
+CREATE INDEX idx_detalle_ventas_producto ON detalle_ventas(producto_id);
+ 
+-- Compras
+CREATE INDEX idx_compras_proveedor     ON compras(proveedor_id);
+CREATE INDEX idx_compras_fecha         ON compras(fecha_compra);
+CREATE INDEX idx_compras_estado        ON compras(estado);
+ 
+-- Kardex
+CREATE INDEX idx_kardex_producto       ON kardex(producto_id);
+CREATE INDEX idx_kardex_fecha          ON kardex(fecha_movimiento);
+CREATE INDEX idx_kardex_origen         ON kardex(origen, referencia_id);
+ 
+-- Clientes
+CREATE INDEX idx_clientes_documento    ON clientes(numero_documento);
+ 
+-- ============================================================
+-- DATOS INICIALES
+-- ============================================================
+ 
+-- Configuración del negocio
+INSERT INTO configuracion_negocio (
+  nombre_negocio, ruc, direccion, distrito, provincia, departamento,
+  telefono, email, mensaje_ticket, igv_porcentaje, moneda, simbolo_moneda
+) VALUES (
+  'Mi Tienda SAC', '20000000001', 'Av. Principal 123', 'Lima', 'Lima', 'Lima',
+  '01-1234567', 'contacto@mitienda.com', '¡Gracias por su compra! Vuelva pronto.',
+  18.00, 'PEN', 'S/'
+);
+ 
+-- Usuario administrador por defecto
+-- Contraseña: Admin123* (reemplazar con hash BCrypt real en producción)
+INSERT INTO usuarios (username, password, nombres, apellidos, rol, estado)
+VALUES ('admin', '$2a$12$HASH_BCRYPT_AQUI', 'Administrador', 'Sistema', 'ADMIN', 1);
+ 
+-- Categorías base
+INSERT INTO categorias (nombre, descripcion) VALUES
+  ('Abarrotes',       'Productos de abarrotes en general'),
+  ('Bebidas',         'Bebidas gaseosas, jugos, agua'),
+  ('Lácteos',         'Leche, yogurt, quesos'),
+  ('Limpieza',        'Productos de limpieza del hogar'),
+  ('Higiene Personal','Productos de higiene y cuidado personal'),
+  ('Embutidos',       'Embutidos y fiambres'),
+  ('Panadería',       'Pan y productos de panadería'),
+  ('Congelados',      'Productos congelados');
+ 
+-- Caja principal
+INSERT INTO cajas (nombre, numero, activa, estado)
+VALUES ('Caja Principal', 1, 1, 'CERRADA');
+
+
+===============================================================
+Scaffold-DbContext "Server=localhost;Port=3307;Database=tienda;User=root;Password=123456;" Pomelo.EntityFrameworkCore.MySql -OutputDir Infrastructure/Models -ContextDir Infrastructure/Data -Context AppDbContext -Force

@@ -1,0 +1,582 @@
+﻿@model TiendaWeb.Areas.admin.ViewModel.ComprasIndexViewModel
+@{
+    Layout = "~/Areas/admin/Views/Shared/_LayoutAdmin.cshtml";
+    ViewData["Title"] = "Compras";
+}
+
+<link rel="stylesheet" href="~/css/admin/compras/index.css" />
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show mb-4 py-2">
+        <i class="bi bi-check-circle me-1"></i> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show mb-4 py-2">
+        <i class="bi bi-x-circle me-1"></i> @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Header -->
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h5 class="mb-0 fw-bold">Órdenes de Compra</h5>
+        <span class="text-muted small">
+            <span class="text-warning fw-semibold">@Model.CountPendiente pendientes</span>
+            · S/ @Model.TotalPendiente.ToString("N2") por recibir
+        </span>
+    </div>
+    <button class="btn btn-primary fw-semibold"
+            data-bs-toggle="modal" data-bs-target="#modalNuevaOC">
+        <i class="bi bi-plus-lg me-1"></i>Nueva orden
+    </button>
+</div>
+
+<!-- Filtros -->
+<div class="card comp-card p-3 mb-4">
+    <form method="get" class="d-flex gap-2 align-items-end flex-wrap">
+        <div>
+            <label class="form-label small fw-semibold">Estado</label>
+            <select name="estado" class="form-select form-select-sm"
+                    onchange="this.form.submit()">
+                <option value="">Todos</option>
+                @foreach (var e in new[] { "PENDIENTE", "PARCIAL", "RECIBIDA", "ANULADA" })
+                {
+                    <option value="@e" selected="@(Model.FiltroEstado == e)">@e</option>
+                }
+            </select>
+        </div>
+        @if (!string.IsNullOrEmpty(Model.FiltroEstado))
+        {
+            <a asp-action="Index" asp-area="admin" asp-controller="Compras"
+               class="btn btn-sm btn-outline-secondary align-self-end">
+                Limpiar
+            </a>
+        }
+    </form>
+</div>
+
+<!-- Tabla -->
+<div class="card comp-card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Orden</th>
+                        <th>Proveedor</th>
+                        <th>Doc. Proveedor</th>
+                        <th>Pago</th>
+                        <th class="text-end">Total</th>
+                        <th>Estado</th>
+                        <th>Fecha</th>
+                        <th class="text-end pe-4">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var c in Model.Lista)
+                    {
+                        <tr>
+                            <td class="ps-4">
+                                <span class="badge bg-light text-dark border fw-semibold">
+                                    @c.NumeroOrden
+                                </span>
+                            </td>
+                            <td class="small fw-semibold">@c.ProveedorNombre</td>
+                            <td class="small text-muted">
+                                @(c.TipoDocProveedor ?? "")
+                                @(c.NroDocProveedor != null ? $"· {c.NroDocProveedor}" : "")
+                            </td>
+                            <td>
+                                <span class="badge @(c.CondicionPago == "CREDITO"
+                                                                          ? "bg-warning-subtle text-warning"
+                                                                          : "bg-primary-subtle text-primary")">
+                                    @c.CondicionPago
+                                </span>
+                                @if (c.FechaVencimiento.HasValue)
+                                {
+                                    <div class="text-muted" style="font-size:.7rem">
+                                        Vence: @c.FechaVencimiento.Value.ToString("dd/MM/yyyy")
+                                    </div>
+                                }
+                            </td>
+                            <td class="text-end fw-semibold">
+                                S/ @c.Total.ToString("N2")
+                            </td>
+                            <td>
+                                @{
+                                    var (bg, txt) = c.Estado switch
+                                    {
+                                        "PENDIENTE" => ("bg-warning-subtle", "text-warning"),
+                                        "PARCIAL" => ("bg-info-subtle", "text-info"),
+                                        "RECIBIDA" => ("bg-success-subtle", "text-success"),
+                                        "ANULADA" => ("bg-danger-subtle", "text-danger"),
+                                        _ => ("bg-secondary-subtle", "text-secondary")
+                                    };
+                                }
+                                <span class="badge @bg @txt">@c.Estado</span>
+                            </td>
+                            <td class="small text-muted">
+                                @c.FechaCompra.ToString("dd/MM/yyyy")
+                                @if (c.FechaEntrega.HasValue)
+                                {
+                                    <div style="font-size:.7rem">
+                                        Entrega: @c.FechaEntrega.Value.ToString("dd/MM")
+                                    </div>
+                                }
+                            </td>
+                            <td class="text-end pe-4">
+                                <button class="btn btn-sm btn-outline-primary me-1"
+                                        onclick="verDetalle(@c.CompraId)"
+                                        title="Ver detalle">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                @if (c.PuedeRecibir)
+                                {
+                                    <a asp-action="Recepcion" asp-controller="Compras"
+                                       asp-area="admin" asp-route-id="@c.CompraId"
+                                       class="btn btn-sm btn-outline-success me-1"
+                                       title="Recibir mercadería">
+                                        <i class="bi bi-box-arrow-in-down"></i>
+                                    </a>
+                                }
+                                @if (c.PuedeAnular)
+                                {
+                                    <button class="btn btn-sm btn-outline-danger"
+                                            onclick="confirmarAnulacion(@c.CompraId,'@c.NumeroOrden')"
+                                            title="Anular">
+                                        <i class="bi bi-x-circle"></i>
+                                    </button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.Lista.Any())
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center text-muted py-5">
+                                <i class="bi bi-truck me-1"></i>Sin órdenes registradas
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ══ MODAL NUEVA OC ══ -->
+<div class="modal fade" id="modalNuevaOC" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h6 class="modal-title fw-bold">
+                    <i class="bi bi-plus-lg me-1 text-primary"></i>Nueva Orden de Compra
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-4">
+                    <!-- Izquierda: formulario -->
+                    <div class="col-lg-5">
+                        <div class="section-divider">Datos de la orden</div>
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label">Proveedor *</label>
+                                <select id="ocProveedor" class="form-select">
+                                    <option value="">— Seleccionar —</option>
+                                    @foreach (var p in Model.Proveedores)
+                                    {
+                                        <option value="@p.Id">@p.Nombre</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">Tipo doc. proveedor</label>
+                                <select id="ocTipoDoc" class="form-select">
+                                    <option value="FACTURA">Factura</option>
+                                    <option value="BOLETA">Boleta</option>
+                                    <option value="OTRO">Otro</option>
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">N° doc. proveedor</label>
+                                <input id="ocNroDoc" class="form-control"
+                                       placeholder="F001-00001" />
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">Fecha entrega</label>
+                                <input id="ocFechaEntrega" type="date" class="form-control" />
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">Condición pago</label>
+                                <select id="ocCondicion" class="form-select"
+                                        onchange="toggleVencimiento()">
+                                    <option value="CONTADO">Contado</option>
+                                    <option value="CREDITO">Crédito</option>
+                                </select>
+                            </div>
+                            <div class="col-6" id="divVencimiento" style="display:none">
+                                <label class="form-label">Fecha vencimiento</label>
+                                <input id="ocVencimiento" type="date" class="form-control" />
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">Descuento S/</label>
+                                <input id="ocDescuento" type="number" class="form-control"
+                                       min="0" step="0.01" value="0"
+                                       oninput="calcularTotalesOC()" />
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Observaciones</label>
+                                <textarea id="ocObs" class="form-control" rows="2"></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Totales OC -->
+                        <div class="mt-3 p-3 rounded" style="background:#f8fafc">
+                            <div class="d-flex justify-content-between small text-muted mb-1">
+                                <span>Subtotal</span><span id="ocSubtotal">S/ 0.00</span>
+                            </div>
+                            <div class="d-flex justify-content-between small text-muted mb-1">
+                                <span>IGV</span><span id="ocIgv">S/ 0.00</span>
+                            </div>
+                            <div class="d-flex justify-content-between small text-muted mb-1">
+                                <span>Descuento</span>
+                                <span id="ocDescuentoLbl" class="text-danger">-S/ 0.00</span>
+                            </div>
+                            <div class="d-flex justify-content-between fw-bold mt-1 border-top pt-1">
+                                <span>TOTAL</span><span id="ocTotal">S/ 0.00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Derecha: productos -->
+                    <div class="col-lg-7">
+                        <div class="section-divider">Productos</div>
+                        <input type="text" id="ocBuscar" class="form-control form-control-sm mb-2"
+                               placeholder="Buscar producto..." oninput="filtrarOC()" />
+                        <div id="oc-productos" class="mb-3">
+                            @foreach (var p in Model.Productos)
+                            {
+                                <div class="oc-tile"
+                                     data-id="@p.ProductoId"
+                                     data-nombre="@p.Nombre"
+                                     data-precio="@p.Precio"
+                                     data-codigo="@p.Codigo"
+                                     onclick="agregarItemOC(this)">
+                                    <div class="nombre">@p.Nombre</div>
+                                    <div class="precio">Costo: S/ @p.Precio.ToString("N2")</div>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="section-divider">Items de la orden</div>
+                        <div class="oc-item-row fw-semibold small text-muted"
+                             style="font-size:.72rem">
+                            <span>Producto</span>
+                            <span>Cantidad</span>
+                            <span>Precio costo</span>
+                            <span>Total</span>
+                            <span></span>
+                        </div>
+                        <div id="oc-items-list">
+                            <div id="oc-vacio" class="text-center text-muted py-3 small">
+                                Sin productos agregados
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn btn-primary fw-semibold" onclick="guardarOC()">
+                    <i class="bi bi-floppy me-1"></i>Crear orden
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══ MODAL DETALLE ══ -->
+<div class="modal fade" id="modalDetalle" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h6 class="modal-title fw-bold">
+                    <i class="bi bi-file-text me-1 text-primary"></i>
+                    Detalle — <span id="detOrden"></span>
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="detBody">
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══ MODAL ANULAR ══ -->
+<div class="modal fade" id="modalAnular" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h6 class="modal-title fw-bold text-danger">
+                    <i class="bi bi-x-circle me-1"></i>Anular orden
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form asp-action="Anular" asp-controller="Compras"
+                      asp-area="admin" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="CompraId" id="anularId" />
+                    <p class="text-muted small mb-3">
+                        Vas a anular la orden <strong id="anularOrden"></strong>.
+                        Si ya se recibió mercadería, el stock será devuelto.
+                    </p>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">Motivo *</label>
+                        <textarea name="Motivo" class="form-control" rows="2"
+                                  required placeholder="Describe el motivo..."></textarea>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-secondary flex-grow-1"
+                                data-bs-dismiss="modal">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-danger fw-semibold flex-grow-1">
+                            Confirmar anulación
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@Html.AntiForgeryToken()
+
+@section Scripts {
+    <script>
+        const igvPct  = 0.18;
+        const ocItems = [];
+        const afToken = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+        // ── Filtrar productos ──
+        function filtrarOC() {
+            const q = document.getElementById('ocBuscar').value.toLowerCase();
+            document.querySelectorAll('.oc-tile').forEach(t => {
+                t.style.display = t.dataset.nombre.toLowerCase().includes(q) ? '' : 'none';
+            });
+        }
+
+        // ── Toggle vencimiento ──
+        function toggleVencimiento() {
+            const v = document.getElementById('ocCondicion').value === 'CREDITO';
+            document.getElementById('divVencimiento').style.display = v ? 'block' : 'none';
+        }
+
+        // ── Agregar item ──
+        function agregarItemOC(tile) {
+            const id     = parseInt(tile.dataset.id);
+            const nombre = tile.dataset.nombre;
+            const precio = parseFloat(tile.dataset.precio);
+            const existe = ocItems.find(i => i.id === id);
+            if (existe) { existe.cantidad++; }
+            else { ocItems.push({ id, nombre, precio, cantidad: 1, descuento: 0 }); }
+            renderItemsOC();
+        }
+
+        // ── Render items ──
+        function renderItemsOC() {
+            const cont  = document.getElementById('oc-items-list');
+            const vacio = document.getElementById('oc-vacio');
+            if (!ocItems.length) {
+                cont.innerHTML = '';
+                cont.appendChild(vacio);
+                vacio.style.display = 'block';
+                calcularTotalesOC();
+                return;
+            }
+            vacio.style.display = 'none';
+            cont.innerHTML = ocItems.map((item, i) => `
+                <div class="oc-item-row">
+                    <span class="fw-semibold" style="font-size:.8rem">${item.nombre}</span>
+                    <input type="number" value="${item.cantidad}" min="0.001" step="0.001"
+                           class="form-control form-control-sm"
+                           oninput="ocItems[${i}].cantidad=parseFloat(this.value)||1; calcularTotalesOC()" />
+                    <input type="number" value="${item.precio.toFixed(2)}" min="0" step="0.01"
+                           class="form-control form-control-sm"
+                           oninput="ocItems[${i}].precio=parseFloat(this.value)||0; calcularTotalesOC()" />
+                    <span class="fw-semibold text-primary" id="oc-total-${i}">
+                        S/ ${(item.precio * item.cantidad).toFixed(2)}
+                    </span>
+                    <button class="btn btn-sm btn-outline-danger"
+                            onclick="ocItems.splice(${i},1); renderItemsOC()">×</button>
+                </div>
+            `).join('');
+            calcularTotalesOC();
+        }
+
+        // ── Calcular totales ──
+        function calcularTotalesOC() {
+            const bruto = ocItems.reduce((s, i) => s + i.precio * i.cantidad, 0);
+            const desc  = parseFloat(document.getElementById('ocDescuento').value) || 0;
+            const total = Math.max(0, bruto - desc);
+            const igv   = total - total / (1 + igvPct);
+            const sub   = total - igv;
+
+            document.getElementById('ocSubtotal').textContent     = `S/ ${sub.toFixed(2)}`;
+            document.getElementById('ocIgv').textContent          = `S/ ${igv.toFixed(2)}`;
+            document.getElementById('ocDescuentoLbl').textContent = `-S/ ${desc.toFixed(2)}`;
+            document.getElementById('ocTotal').textContent        = `S/ ${total.toFixed(2)}`;
+
+            ocItems.forEach((item, i) => {
+                const el = document.getElementById(`oc-total-${i}`);
+                if (el) el.textContent = `S/ ${(item.precio * item.cantidad).toFixed(2)}`;
+            });
+        }
+
+        // ── Guardar OC ──
+        async function guardarOC() {
+            const provId = document.getElementById('ocProveedor').value;
+            if (!provId) { alert('Selecciona un proveedor.'); return; }
+            if (!ocItems.length) { alert('Agrega al menos un producto.'); return; }
+
+            const payload = {
+                proveedorId      : parseInt(provId),
+                tipoDocProveedor : document.getElementById('ocTipoDoc').value,
+                nroDocProveedor  : document.getElementById('ocNroDoc').value || null,
+                fechaEntrega     : document.getElementById('ocFechaEntrega').value || null,
+                condicionPago    : document.getElementById('ocCondicion').value,
+                fechaVencimiento : document.getElementById('ocVencimiento').value || null,
+                descuento        : parseFloat(document.getElementById('ocDescuento').value) || 0,
+                observaciones    : document.getElementById('ocObs').value || null,
+                items: ocItems.map(i => ({
+                    productoId    : i.id,
+                    nombreProducto: i.nombre,
+                    cantidad      : i.cantidad,
+                    precioUnitario: i.precio,
+                    descuento     : 0
+                }))
+            };
+
+            const res  = await fetch('/admin/Compras/Create', {
+                method : 'POST',
+                headers: {
+                    'Content-Type'            : 'application/json',
+                    'RequestVerificationToken': afToken
+                },
+                body: JSON.stringify(payload)
+            });
+            const json = await res.json();
+
+            if (json.success) {
+                bootstrap.Modal.getInstance('#modalNuevaOC').hide();
+                location.reload();
+            } else {
+                alert(json.message);
+            }
+        }
+
+        // ── Ver detalle ──
+        async function verDetalle(id) {
+            document.getElementById('detBody').innerHTML =
+                '<div class="text-center py-4"><div class="spinner-border text-primary"></div></div>';
+            new bootstrap.Modal('#modalDetalle').show();
+
+            const res = await fetch(`/admin/Compras/Detalle/${id}`);
+            const d   = await res.json();
+
+            document.getElementById('detOrden').textContent = d.numeroOrden;
+
+            const estadoMap = {
+                PENDIENTE: 'bg-warning-subtle text-warning',
+                PARCIAL  : 'bg-info-subtle text-info',
+                RECIBIDA : 'bg-success-subtle text-success',
+                ANULADA  : 'bg-danger-subtle text-danger'
+            };
+
+            const itemsHtml = d.items.map(i => `
+                <tr>
+                    <td>${i.nombreProducto}</td>
+                    <td class="text-center">${i.cantidad}</td>
+                    <td class="text-center">${i.cantidadRecibida}</td>
+                    <td class="text-center ${i.pendiente > 0 ? 'text-warning fw-semibold' : ''}">
+                        ${i.pendiente}
+                    </td>
+                    <td class="text-end">S/ ${i.precioUnitario.toFixed(2)}</td>
+                    <td class="text-end fw-semibold">S/ ${i.total.toFixed(2)}</td>
+                </tr>
+            `).join('');
+
+            document.getElementById('detBody').innerHTML = `
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <div class="small text-muted">Proveedor</div>
+                        <div class="fw-semibold">${d.proveedorNombre}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="small text-muted">Estado</div>
+                        <span class="badge ${estadoMap[d.estado]}">${d.estado}</span>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="small text-muted">Doc. proveedor</div>
+                        <div>${d.tipoDocProveedor ?? '—'} ${d.nroDocProveedor ?? ''}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="small text-muted">Condición pago</div>
+                        <div class="fw-semibold">${d.condicionPago}
+                            ${d.fechaVencimiento ? '· Vence: '+d.fechaVencimiento.substring(0,10) : ''}
+                        </div>
+                    </div>
+                </div>
+                <table class="table table-sm table-bordered mb-3">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Producto</th>
+                            <th class="text-center">Pedido</th>
+                            <th class="text-center">Recibido</th>
+                            <th class="text-center">Pendiente</th>
+                            <th class="text-end">Precio</th>
+                            <th class="text-end">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>${itemsHtml}</tbody>
+                </table>
+                <div class="row justify-content-end">
+                    <div class="col-md-4">
+                        <div class="d-flex justify-content-between small">
+                            <span class="text-muted">Subtotal</span>
+                            <span>S/ ${d.subtotal.toFixed(2)}</span>
+                        </div>
+                        <div class="d-flex justify-content-between small">
+                            <span class="text-muted">IGV</span>
+                            <span>S/ ${d.igv.toFixed(2)}</span>
+                        </div>
+                        <div class="d-flex justify-content-between small">
+                            <span class="text-muted">Descuento</span>
+                            <span class="text-danger">-S/ ${d.descuento.toFixed(2)}</span>
+                        </div>
+                        <div class="d-flex justify-content-between fw-bold border-top pt-1 mt-1">
+                            <span>TOTAL</span><span>S/ ${d.total.toFixed(2)}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ── Anular ──
+        function confirmarAnulacion(id, orden) {
+            document.getElementById('anularId').value          = id;
+            document.getElementById('anularOrden').textContent = orden;
+            new bootstrap.Modal('#modalAnular').show();
+        }
+    </script>
+}

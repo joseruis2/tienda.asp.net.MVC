@@ -1,0 +1,280 @@
+﻿@model TiendaWeb.Areas.admin.ViewModel.SesionesCajaIndexViewModel
+@{
+    Layout = "~/Areas/admin/Views/Shared/_LayoutAdmin.cshtml";
+    ViewData["Title"] = "Sesiones de Caja";
+}
+
+<link rel="stylesheet" href="~/css/admin/sesionescaja/index.css" />
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show mb-4 py-2">
+        <i class="bi bi-check-circle me-1"></i> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show mb-4 py-2">
+        <i class="bi bi-x-circle me-1"></i> @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- ── Estado actual ── -->
+@if (Model.SesionActiva != null)
+{
+    var s = Model.SesionActiva;
+    <div class="card sesion-card border-success mb-4" style="border-width:2px!important">
+        <div class="card-body p-4">
+            <div class="d-flex align-items-start justify-content-between flex-wrap gap-3">
+                <div>
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="badge bg-success fs-6 px-3 py-2">
+                            <i class="bi bi-circle-fill me-1" style="font-size:.5rem"></i>
+                            CAJA ABIERTA
+                        </span>
+                        <span class="fw-bold">
+                            Caja #@s.CajaNumero — @s.CajaNombre
+                        </span>
+                    </div>
+                    <div class="text-muted small">
+                        <i class="bi bi-person me-1"></i>@s.UsuarioNombre
+                        &nbsp;·&nbsp;
+                        <i class="bi bi-clock me-1"></i>
+                        Apertura: @s.FechaApertura.ToString("dd/MM/yyyy HH:mm")
+                        &nbsp;·&nbsp;
+                        Tiempo: @(s.Duracion.HasValue
+                                                    ? $"{(int)s.Duracion.Value.TotalHours}h {s.Duracion.Value.Minutes}m"
+                                                    : "—")
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <div class="stat-box bg-primary-subtle text-center">
+                        <div style="font-size:.7rem; color:#64748b">APERTURA</div>
+                        <div class="fw-bold text-primary">
+                            S/ @s.MontoApertura.ToString("N2")
+                        </div>
+                    </div>
+                    <a asp-action="Cierre" asp-controller="SesionesCaja"
+                       asp-area="admin" asp-route-id="@s.SesionId"
+                       class="btn btn-danger fw-semibold">
+                        <i class="bi bi-lock me-1"></i>Cerrar caja
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="card sesion-card mb-4" style="border:2px dashed #e2e8f0">
+        <div class="card-body p-4 text-center">
+            <i class="bi bi-cash-register text-muted d-block mb-2" style="font-size:2rem"></i>
+            <p class="text-muted mb-3">No hay ninguna caja abierta</p>
+            <button class="btn btn-success fw-semibold"
+                    data-bs-toggle="modal" data-bs-target="#modalAbrir">
+                <i class="bi bi-unlock me-1"></i>Abrir caja
+            </button>
+        </div>
+    </div>
+}
+
+<!-- ── Historial ── -->
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <h6 class="mb-0 fw-bold">Historial de sesiones</h6>
+    @if (Model.SesionActiva == null && Model.CajasDisponibles.Any())
+    {
+        <button class="btn btn-sm btn-success fw-semibold"
+                data-bs-toggle="modal" data-bs-target="#modalAbrir">
+            <i class="bi bi-unlock me-1"></i>Abrir caja
+        </button>
+    }
+</div>
+
+<div class="card sesion-card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">#</th>
+                        <th>Caja</th>
+                        <th>Usuario</th>
+                        <th>Apertura</th>
+                        <th>Cierre</th>
+                        <th>Sistema</th>
+                        <th>Contado</th>
+                        <th>Diferencia</th>
+                        <th>Estado</th>
+                        <th>Duración</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var s in Model.Historial)
+                    {
+                        <tr>
+                            <td class="ps-4 text-muted small">@s.SesionId</td>
+                            <td>
+                                <div class="fw-semibold small">@s.CajaNombre</div>
+                                <div class="text-muted" style="font-size:.72rem">
+                                    #@s.CajaNumero
+                                </div>
+                            </td>
+                            <td class="small">@s.UsuarioNombre</td>
+                            <td class="small">
+                                S/ @s.MontoApertura.ToString("N2")
+                                <div class="text-muted" style="font-size:.72rem">
+                                    @s.FechaApertura.ToString("dd/MM HH:mm")
+                                </div>
+                            </td>
+                            <td class="small">
+                                @if (s.MontoCierre.HasValue)
+                                {
+                                    <span>S/ @s.MontoCierre.Value.ToString("N2")</span>
+                                    <div class="text-muted" style="font-size:.72rem">
+                                        @s.FechaCierre?.ToString("dd/MM HH:mm")
+                                    </div>
+                                }
+                                else
+                                {
+
+                                    <span class="text-muted">—</span>
+                                }
+                            </td>
+                            <td class="small">
+                                @(s.MontoSistema.HasValue
+                                    ? $"S/ {s.MontoSistema.Value:N2}" : "—")
+                            </td>
+                            <td class="small">
+                                @(s.MontoCierre.HasValue
+                                    ? $"S/ {s.MontoCierre.Value:N2}" : "—")
+                            </td>
+                            <td>
+                                @if (s.Diferencia.HasValue)
+                                {
+                                    var dif = s.Diferencia.Value;
+                                    if (dif == 0)
+                                    {
+                                        <span class="badge bg-success-subtle text-success">
+                                            Exacto
+                                        </span>
+                                    }
+                                    else if (dif > 0)
+                                    {
+                                        <span class="badge bg-info-subtle text-info">
+                                            +S/ @dif.ToString("N2")
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger-subtle text-danger">
+                                            -S/ @Math.Abs(dif).ToString("N2")
+                                        </span>
+                                    }
+                                }
+                                else
+                                {
+
+                                    <span class="text-muted small">—</span>
+                                }
+                            </td>
+                            <td>
+                                @if (s.EstaAbierta)
+                                {
+                                    <span class="badge bg-success-subtle text-success">Abierta</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary-subtle text-secondary">Cerrada</span>
+                                }
+                            </td>
+                            <td class="small text-muted">
+                                @(s.Duracion.HasValue
+                                    ? $"{(int)s.Duracion.Value.TotalHours}h {s.Duracion.Value.Minutes}m"
+                                    : "—")
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.Historial.Any())
+                    {
+                        <tr>
+                            <td colspan="10" class="text-center text-muted py-5">
+                                <i class="bi bi-clock-history me-1"></i>
+                                Sin sesiones registradas
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ══ MODAL ABRIR CAJA ══ -->
+<div class="modal fade" id="modalAbrir" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h6 class="modal-title fw-bold">
+                    <i class="bi bi-unlock me-1 text-success"></i>Abrir caja
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form asp-action="Abrir" asp-controller="SesionesCaja"
+                      asp-area="admin" method="post">
+                    @Html.AntiForgeryToken()
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="Abrir.CajaId" class="form-label"></label>
+                            <select asp-for="Abrir.CajaId" class="form-select">
+                                <option value="">— Seleccionar caja —</option>
+                                @foreach (var c in Model.CajasDisponibles)
+                                {
+                                    <option value="@c.Id">@c.Nombre</option>
+                                }
+                            </select>
+                            <span asp-validation-for="Abrir.CajaId" class="text-danger small"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Abrir.MontoApertura" class="form-label"></label>
+                            <div class="input-group">
+                                <span class="input-group-text fw-bold">S/</span>
+                                <input asp-for="Abrir.MontoApertura" type="number"
+                                       class="form-control form-control-lg"
+                                       min="0" step="0.01" placeholder="0.00" />
+                            </div>
+                            <span asp-validation-for="Abrir.MontoApertura" class="text-danger small"></span>
+                            <div class="form-text">Dinero físico con el que inicia la caja</div>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Abrir.Observaciones" class="form-label"></label>
+                            <textarea asp-for="Abrir.Observaciones" class="form-control"
+                                      rows="2" placeholder="Observaciones opcionales"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 px-0 pb-0 mt-3">
+                        <button type="button" class="btn btn-secondary"
+                                data-bs-dismiss="modal">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-success fw-semibold">
+                            <i class="bi bi-unlock me-1"></i>Abrir caja
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        @if (TempData["AbrirModal"] != null)
+        {
+                <text>new bootstrap.Modal('#modalAbrir').show();</text>
+        }
+    </script>
+    <partial name="_ValidationScriptsPartial" />
+}

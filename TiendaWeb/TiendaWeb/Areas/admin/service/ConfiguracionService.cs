@@ -1,4 +1,5 @@
-﻿using TiendaWeb.Areas.admin.ViewModel;
+﻿using TiendaWeb.Areas.admin.repository;
+using TiendaWeb.Areas.admin.ViewModel;
 
 namespace TiendaWeb.Areas.admin.service
 {

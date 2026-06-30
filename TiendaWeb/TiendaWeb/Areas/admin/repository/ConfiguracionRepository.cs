@@ -1,7 +1,6 @@
 ﻿using TiendaWeb.Infrastructure.Data;
 using TiendaWeb.Infrastructure.Models;
 using Microsoft.EntityFrameworkCore;
-using TiendaWeb.Areas.admin.ViewModel;
 
 namespace TiendaWeb.Areas.admin.repository
 {

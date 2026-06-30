@@ -1,0 +1,231 @@
+﻿@model TiendaWeb.Areas.admin.ViewModel.DevolucionCreateViewModel
+@{
+    Layout = "~/Areas/admin/Views/Shared/_LayoutAdmin.cshtml";
+    ViewData["Title"] = "Nueva Devolución";
+}
+
+<style>
+    .dev-card {
+        border: none;
+        border-radius: 14px;
+        box-shadow: 0 1px 6px rgba(0,0,0,.07);
+    }
+
+    .form-label {
+        font-size: .825rem;
+        font-weight: 600;
+        color: #374151;
+    }
+
+    .form-control, .form-select {
+        font-size: .875rem;
+        background: #f8fafc;
+        border-color: #e2e8f0;
+    }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #1a56db;
+            box-shadow: 0 0 0 3px rgba(26,86,219,.12);
+            background: #fff;
+        }
+</style>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show mb-4 py-2">
+        <i class="bi bi-x-circle me-1"></i> @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Paso 1: buscar venta -->
+@if (Model.VentaId == 0)
+{
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card dev-card p-4 text-center">
+                <i class="bi bi-search text-primary d-block mb-3"
+                   style="font-size:2.5rem"></i>
+                <h6 class="fw-bold mb-3">Buscar venta para devolver</h6>
+                <form method="get">
+                    <div class="input-group">
+                        <input type="text" name="ticket" class="form-control form-control-lg"
+                               placeholder="Ej: T001-00000001"
+                               value="@Context.Request.Query["ticket"]" autofocus />
+                        <button type="submit" class="btn btn-primary fw-semibold">
+                            <i class="bi bi-search"></i> Buscar
+                        </button>
+                    </div>
+                    <div class="form-text mt-2">
+                        Ingresa el número de ticket de la venta
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <!-- Paso 2: procesar devolución -->
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+
+            <!-- Info venta -->
+            <div class="card dev-card mb-4 border-primary" style="border-width:2px!important">
+                <div class="card-body p-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="badge bg-primary me-2">@Model.NumeroTicket</span>
+                            <span class="fw-semibold">@(Model.ClienteNombre ?? "Consumidor Final")</span>
+                        </div>
+                        <div class="fw-bold text-primary">
+                            Total venta: S/ @Model.TotalVenta.ToString("N2")
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <form asp-action="Nueva" asp-controller="Devoluciones"
+                  asp-area="admin" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="VentaId" value="@Model.VentaId" />
+                <input type="hidden" name="NumeroTicket" value="@Model.NumeroTicket" />
+                <input type="hidden" name="ClienteNombre" value="@Model.ClienteNombre" />
+                <input type="hidden" name="TotalVenta" value="@Model.TotalVenta" />
+
+                <div class="card dev-card mb-4">
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold mb-3">Productos a devolver</h6>
+                        <table class="table align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Producto</th>
+                                    <th class="text-center">Vendido</th>
+                                    <th class="text-end">Precio</th>
+                                    <th class="text-center" style="width:130px">
+                                        Devolver
+                                    </th>
+                                    <th class="text-center">
+                                        Stock
+                                        <div class="text-muted fw-normal"
+                                             style="font-size:.7rem">
+                                            ¿Regresa?
+                                        </div>
+                                    </th>
+                                    <th class="text-end">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (int i = 0; i < Model.Items.Count; i++)
+                                {
+                                    var item = Model.Items[i];
+                                    <tr>
+                                        <input type="hidden"
+                                               name="Items[@i].ProductoId"
+                                               value="@item.ProductoId" />
+                                        <input type="hidden"
+                                               name="Items[@i].NombreProducto"
+                                               value="@item.NombreProducto" />
+                                        <input type="hidden"
+                                               name="Items[@i].CantidadVendida"
+                                               value="@item.CantidadVendida" />
+                                        <input type="hidden"
+                                               name="Items[@i].PrecioUnitario"
+                                               value="@item.PrecioUnitario" />
+                                        <td class="fw-semibold" style="font-size:.875rem">
+                                            @item.NombreProducto
+                                        </td>
+                                        <td class="text-center text-muted">
+                                            @item.CantidadVendida
+                                        </td>
+                                        <td class="text-end small">
+                                            S/ @item.PrecioUnitario.ToString("N2")
+                                        </td>
+                                        <td>
+                                            <input type="number"
+                                                   name="Items[@i].CantidadDevolver"
+                                                   class="form-control form-control-sm text-center cant-dev"
+                                                   min="0"
+                                                   max="@item.CantidadVendida"
+                                                   step="0.001"
+                                                   value="0"
+                                                   data-precio="@item.PrecioUnitario"
+                                                   oninput="calcTotal()" />
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="form-check form-switch d-flex justify-content-center">
+                                                <input type="checkbox"
+                                                       name="Items[@i].RegresaStock"
+                                                       class="form-check-input"
+                                                       value="true"
+                                                       checked />
+                                            </div>
+                                        </td>
+                                        <td class="text-end fw-semibold text-danger subtotal-item">
+                                            S/ 0.00
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr class="fw-bold">
+                                    <td colspan="5" class="text-end">
+                                        Total a devolver:
+                                    </td>
+                                    <td class="text-end text-danger fs-5" id="totalDevolver">
+                                        S/ 0.00
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card dev-card p-4">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Tipo de devolución</label>
+                            <select name="TipoDevolucion" class="form-select">
+                                <option value="EFECTIVO">💵 Efectivo</option>
+                                <option value="CAMBIO_PRODUCTO">🔄 Cambio de producto</option>
+                                <option value="NOTA_CREDITO">📄 Nota de crédito</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Motivo</label>
+                            <input type="text" name="Motivo" class="form-control"
+                                   placeholder="Producto defectuoso, error en pedido..." />
+                        </div>
+                        <div class="col-12 d-flex gap-2 justify-content-end">
+                            <a asp-action="Index" asp-controller="Devoluciones"
+                               asp-area="admin" class="btn btn-secondary">
+                                Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-danger fw-semibold">
+                                <i class="bi bi-arrow-return-left me-1"></i>
+                                Procesar devolución
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        function calcTotal() {
+            let total = 0;
+            document.querySelectorAll('.cant-dev').forEach((input, i) => {
+                const cant   = parseFloat(input.value) || 0;
+                const precio = parseFloat(input.dataset.precio) || 0;
+                const sub    = Math.round(cant * precio * 100) / 100;
+                total += sub;
+                const cells = document.querySelectorAll('.subtotal-item');
+                if (cells[i]) cells[i].textContent = `S/ ${sub.toFixed(2)}`;
+            });
+            document.getElementById('totalDevolver').textContent = `S/ ${total.toFixed(2)}`;
+        }
+    </script>
+}

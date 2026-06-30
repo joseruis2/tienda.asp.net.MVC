@@ -1,0 +1,52 @@
+﻿.inv-card {
+    border: none;
+    border-radius: 14px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.07);
+}
+
+.metric-card {
+    border: none;
+    border-radius: 14px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.07);
+}
+
+.metric-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+}
+
+.form-control, .form-select {
+    font-size: .875rem;
+    background: #f8fafc;
+    border-color: #e2e8f0;
+}
+
+    .form-control:focus, .form-select:focus {
+        border-color: #10b981;
+        box-shadow: 0 0 0 3px rgba(16,185,129,.12);
+        background: #fff;
+    }
+
+.stock-bar {
+    height: 6px;
+    border-radius: 3px;
+    background: #e2e8f0;
+    overflow: hidden;
+}
+
+.stock-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width .3s;
+}
+
+.vencer-badge {
+    background: #fef9c3;
+    color: #854d0e;
+    font-size: .68rem;
+}

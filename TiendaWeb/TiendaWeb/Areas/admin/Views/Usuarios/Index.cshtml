@@ -4,18 +4,7 @@
     ViewData["Title"] = "Usuarios";
 }
 
-<style>
-    .user-card { border:none; border-radius:14px; box-shadow:0 1px 6px rgba(0,0,0,.07); }
-    .avatar-sm { width:34px; height:34px; border-radius:50%; background:#1a56db;
-                 display:flex; align-items:center; justify-content:center;
-                 font-size:.8rem; color:#fff; font-weight:700; flex-shrink:0; }
-    .badge-rol { font-size:.7rem; padding:.3em .6em; }
-    .form-label { font-size:.825rem; font-weight:600; color:#374151; }
-    .form-control, .form-select { font-size:.875rem; background:#f8fafc; border-color:#e2e8f0; }
-    .form-control:focus, .form-select:focus {
-        border-color:#1a56db; box-shadow:0 0 0 3px rgba(26,86,219,.12); background:#fff;
-    }
-</style>
+<link rel="stylesheet" href="~/css/admin/usuarios/index.css" />
 
 @if (TempData["Success"] != null)
 {

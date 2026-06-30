@@ -1,0 +1,519 @@
+﻿@model TiendaWeb.Areas.admin.ViewModel.ProductosIndexViewModel
+@{
+    Layout = "~/Areas/admin/Views/Shared/_LayoutAdmin.cshtml";
+    ViewData["Title"] = "Productos";
+}
+
+<link rel="stylesheet" href="~/css/admin/productos/index.css" />
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show mb-4 py-2">
+        <i class="bi bi-check-circle me-1"></i> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show mb-4 py-2">
+        <i class="bi bi-x-circle me-1"></i> @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Header -->
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h5 class="mb-0 fw-bold">Productos</h5>
+        <span class="text-muted small">
+            @Model.Lista.Count productos —
+            <span class="text-warning fw-semibold">
+                @Model.Lista.Count(p => p.StockBajo) con stock bajo
+            </span>
+        </span>
+    </div>
+    <button class="btn btn-primary fw-semibold"
+            data-bs-toggle="modal" data-bs-target="#modalCrear">
+        <i class="bi bi-plus-lg me-1"></i> Nuevo producto
+    </button>
+</div>
+
+<!-- Tabla -->
+<div class="card prod-card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Producto</th>
+                        <th>Categoría</th>
+                        <th>Precios</th>
+                        <th>Stock</th>
+                        <th>Estado</th>
+                        <th class="text-end pe-4">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in Model.Lista)
+                    {
+                        <tr>
+                            <td class="ps-4">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="prod-img-placeholder">
+                                        @if (!string.IsNullOrEmpty(p.CodigoBarras))
+                                        {
+                                            <i class="bi bi-upc text-primary" style="font-size:.9rem"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="bi bi-box-seam text-primary" style="font-size:.9rem"></i>
+                                        }
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold" style="font-size:.875rem">
+                                            @p.Nombre
+                                        </div>
+                                        <div class="text-muted" style="font-size:.72rem">
+                                            @p.Codigo
+                                            @if (!string.IsNullOrEmpty(p.CodigoBarras))
+                                            {
+                                                <span class="ms-1">· @p.CodigoBarras</span>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-primary-subtle text-primary">
+                                    @(p.CategoriaNombre ?? "—")
+                                </span>
+                                @if (!string.IsNullOrEmpty(p.ProveedorNombre))
+                                {
+                                    <div class="text-muted" style="font-size:.72rem">
+                                        @p.ProveedorNombre
+                                    </div>
+                                }
+                            </td>
+                            <td>
+                                <div class="small">
+                                    <span class="text-muted">Costo:</span>
+                                    <strong>S/ @p.PrecioCosto.ToString("N2")</strong>
+                                </div>
+                                <div class="small">
+                                    <span class="text-muted">Venta:</span>
+                                    <strong class="text-success">S/ @p.Precio.ToString("N2")</strong>
+                                </div>
+                                <div class="small">
+                                    <span class="text-muted">Mayor:</span>
+                                    <strong>S/ @p.PrecioMayorista.ToString("N2")</strong>
+                                </div>
+                            </td>
+                            <td>
+                                @if (p.StockBajo)
+                                {
+                                    <span class="badge stock-badge-low">
+                                        <i class="bi bi-exclamation-triangle me-1"></i>
+                                        @p.StockActual
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success-subtle text-success">
+                                        @p.StockActual
+                                    </span>
+                                }
+                                <div class="text-muted" style="font-size:.72rem">
+                                    mín: @p.StockMinimo
+                                </div>
+                            </td>
+                            <td>
+                                @if (p.Estado == true)
+                                {
+                                    <span class="badge bg-success-subtle text-success">Activo</span>
+                                }
+                                else
+                                {
+
+                                    <span class="badge bg-secondary-subtle text-secondary">Inactivo</span>
+                                }
+                            </td>
+                            <td class="text-end pe-4">
+                                <button class="btn btn-sm btn-outline-primary me-1"
+                                        onclick="cargarEditar(@p.ProductoId)">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <form asp-action="Delete" asp-controller="Productos"
+                                      asp-area="admin" method="post" class="d-inline"
+                                      onsubmit="return confirm('¿Desactivar @p.Nombre?')">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@p.ProductoId" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.Lista.Any())
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-5">
+                                <i class="bi bi-box-seam me-1"></i>No hay productos registrados
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ══ MODAL CREAR ══ -->
+<div class="modal fade" id="modalCrear" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h6 class="modal-title fw-bold">
+                    <i class="bi bi-plus-lg me-1 text-primary"></i>Nuevo producto
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form asp-action="Create" asp-controller="Productos"
+                      asp-area="admin" method="post">
+                    @Html.AntiForgeryToken()
+                    <div class="row g-3">
+
+                        <div class="col-12"><div class="section-divider">Identificación</div></div>
+                        <div class="col-md-3">
+                            <label asp-for="Crear.Codigo" class="form-label"></label>
+                            <input asp-for="Crear.Codigo" class="form-control" placeholder="PROD001" />
+                            <span asp-validation-for="Crear.Codigo" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-3">
+                            <label asp-for="Crear.CodigoBarras" class="form-label"></label>
+                            <input asp-for="Crear.CodigoBarras" class="form-control" placeholder="7501234567890" />
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Crear.Nombre" class="form-label"></label>
+                            <input asp-for="Crear.Nombre" class="form-control" placeholder="Nombre del producto" />
+                            <span asp-validation-for="Crear.Nombre" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Crear.CategoriaId" class="form-label"></label>
+                            <select asp-for="Crear.CategoriaId" class="form-select">
+                                <option value="">— Seleccionar —</option>
+                                @foreach (var c in Model.Categorias)
+                                {
+                                    <option value="@c.Id">@c.Nombre</option>
+                                }
+                            </select>
+                            <span asp-validation-for="Crear.CategoriaId" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Crear.ProveedorId" class="form-label"></label>
+                            <select asp-for="Crear.ProveedorId" class="form-select">
+                                <option value="">— Sin proveedor —</option>
+                                @foreach (var p in Model.Proveedores)
+                                {
+                                    <option value="@p.Id">@p.Nombre</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Crear.UnidadMedida" class="form-label"></label>
+                            <select asp-for="Crear.UnidadMedida" class="form-select">
+                                <option value="Unidad">Unidad</option>
+                                <option value="Kg">Kg</option>
+                                <option value="Lt">Lt</option>
+                                <option value="Caja">Caja</option>
+                                <option value="Paquete">Paquete</option>
+                                <option value="Docena">Docena</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Crear.Descripcion" class="form-label"></label>
+                            <textarea asp-for="Crear.Descripcion" class="form-control"
+                                      rows="2" placeholder="Descripción opcional"></textarea>
+                        </div>
+
+                        <div class="col-12"><div class="section-divider">Precios</div></div>
+                        <div class="col-md-4">
+                            <label asp-for="Crear.PrecioCosto" class="form-label"></label>
+                            <div class="input-group">
+                                <span class="input-group-text">S/</span>
+                                <input asp-for="Crear.PrecioCosto" type="number"
+                                       class="form-control" min="0" step="0.01" />
+                            </div>
+                            <span asp-validation-for="Crear.PrecioCosto" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Crear.Precio" class="form-label"></label>
+                            <div class="input-group">
+                                <span class="input-group-text">S/</span>
+                                <input asp-for="Crear.Precio" type="number"
+                                       class="form-control" min="0" step="0.01" />
+                            </div>
+                            <span asp-validation-for="Crear.Precio" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Crear.PrecioMayorista" class="form-label"></label>
+                            <div class="input-group">
+                                <span class="input-group-text">S/</span>
+                                <input asp-for="Crear.PrecioMayorista" type="number"
+                                       class="form-control" min="0" step="0.01" />
+                            </div>
+                        </div>
+
+                        <div class="col-12"><div class="section-divider">Stock</div></div>
+                        <div class="col-md-4">
+                            <label asp-for="Crear.StockActual" class="form-label"></label>
+                            <input asp-for="Crear.StockActual" type="number"
+                                   class="form-control" min="0" />
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Crear.StockMinimo" class="form-label"></label>
+                            <input asp-for="Crear.StockMinimo" type="number"
+                                   class="form-control" min="0" />
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Crear.StockMaximo" class="form-label"></label>
+                            <input asp-for="Crear.StockMaximo" type="number"
+                                   class="form-control" min="0" />
+                        </div>
+
+                        <div class="col-12"><div class="section-divider">Datos adicionales</div></div>
+                        <div class="col-md-3">
+                            <label asp-for="Crear.Peso" class="form-label"></label>
+                            <div class="input-group">
+                                <input asp-for="Crear.Peso" type="number"
+                                       class="form-control" min="0" step="0.01" />
+                                <span class="input-group-text">kg</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label asp-for="Crear.Ubicacion" class="form-label"></label>
+                            <input asp-for="Crear.Ubicacion" class="form-control"
+                                   placeholder="A1-B2" />
+                        </div>
+                        <div class="col-md-3">
+                            <label asp-for="Crear.FechaVencimiento" class="form-label"></label>
+                            <input asp-for="Crear.FechaVencimiento" type="date"
+                                   class="form-control" />
+                        </div>
+                        <div class="col-md-3">
+                            <label asp-for="Crear.ImagenPrincipal" class="form-label"></label>
+                            <input asp-for="Crear.ImagenPrincipal" class="form-control"
+                                   placeholder="https://..." />
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 px-0 pb-0 mt-3">
+                        <button type="button" class="btn btn-secondary"
+                                data-bs-dismiss="modal">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-primary fw-semibold">
+                            <i class="bi bi-floppy me-1"></i>Guardar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══ MODAL EDITAR ══ -->
+<div class="modal fade" id="modalEditar" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h6 class="modal-title fw-bold">
+                    <i class="bi bi-pencil me-1 text-primary"></i>Editar producto
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form asp-action="Edit" asp-controller="Productos"
+                      asp-area="admin" method="post" id="formEditar">
+                    @Html.AntiForgeryToken()
+                    <input asp-for="Editar.ProductoId" type="hidden" />
+                    <div class="row g-3">
+
+                        <div class="col-12"><div class="section-divider">Identificación</div></div>
+                        <div class="col-md-3">
+                            <label asp-for="Editar.Codigo" class="form-label"></label>
+                            <input asp-for="Editar.Codigo" class="form-control" />
+                            <span asp-validation-for="Editar.Codigo" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-3">
+                            <label asp-for="Editar.CodigoBarras" class="form-label"></label>
+                            <input asp-for="Editar.CodigoBarras" class="form-control" />
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Editar.Nombre" class="form-label"></label>
+                            <input asp-for="Editar.Nombre" class="form-control" />
+                            <span asp-validation-for="Editar.Nombre" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Editar.CategoriaId" class="form-label"></label>
+                            <select asp-for="Editar.CategoriaId" class="form-select">
+                                <option value="">— Seleccionar —</option>
+                                @foreach (var c in Model.Categorias)
+                                {
+                                    <option value="@c.Id">@c.Nombre</option>
+                                }
+                            </select>
+                            <span asp-validation-for="Editar.CategoriaId" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Editar.ProveedorId" class="form-label"></label>
+                            <select asp-for="Editar.ProveedorId" class="form-select">
+                                <option value="">— Sin proveedor —</option>
+                                @foreach (var p in Model.Proveedores)
+                                {
+                                    <option value="@p.Id">@p.Nombre</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Editar.UnidadMedida" class="form-label"></label>
+                            <select asp-for="Editar.UnidadMedida" class="form-select">
+                                <option value="Unidad">Unidad</option>
+                                <option value="Kg">Kg</option>
+                                <option value="Lt">Lt</option>
+                                <option value="Caja">Caja</option>
+                                <option value="Paquete">Paquete</option>
+                                <option value="Docena">Docena</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Editar.Descripcion" class="form-label"></label>
+                            <textarea asp-for="Editar.Descripcion" class="form-control" rows="2"></textarea>
+                        </div>
+
+                        <div class="col-12"><div class="section-divider">Precios</div></div>
+                        <div class="col-md-4">
+                            <label asp-for="Editar.PrecioCosto" class="form-label"></label>
+                            <div class="input-group">
+                                <span class="input-group-text">S/</span>
+                                <input asp-for="Editar.PrecioCosto" type="number"
+                                       class="form-control" min="0" step="0.01" />
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Editar.Precio" class="form-label"></label>
+                            <div class="input-group">
+                                <span class="input-group-text">S/</span>
+                                <input asp-for="Editar.Precio" type="number"
+                                       class="form-control" min="0" step="0.01" />
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Editar.PrecioMayorista" class="form-label"></label>
+                            <div class="input-group">
+                                <span class="input-group-text">S/</span>
+                                <input asp-for="Editar.PrecioMayorista" type="number"
+                                       class="form-control" min="0" step="0.01" />
+                            </div>
+                        </div>
+
+                        <div class="col-12"><div class="section-divider">Stock y datos adicionales</div></div>
+                        <div class="col-md-3">
+                            <label asp-for="Editar.StockMinimo" class="form-label"></label>
+                            <input asp-for="Editar.StockMinimo" type="number"
+                                   class="form-control" min="0" />
+                        </div>
+                        <div class="col-md-3">
+                            <label asp-for="Editar.StockMaximo" class="form-label"></label>
+                            <input asp-for="Editar.StockMaximo" type="number"
+                                   class="form-control" min="0" />
+                        </div>
+                        <div class="col-md-3">
+                            <label asp-for="Editar.Peso" class="form-label"></label>
+                            <div class="input-group">
+                                <input asp-for="Editar.Peso" type="number"
+                                       class="form-control" min="0" step="0.01" />
+                                <span class="input-group-text">kg</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label asp-for="Editar.Ubicacion" class="form-label"></label>
+                            <input asp-for="Editar.Ubicacion" class="form-control" />
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Editar.FechaVencimiento" class="form-label"></label>
+                            <input asp-for="Editar.FechaVencimiento" type="date"
+                                   class="form-control" />
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Editar.ImagenPrincipal" class="form-label"></label>
+                            <input asp-for="Editar.ImagenPrincipal" class="form-control" />
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check form-switch">
+                                <input asp-for="Editar.Estado" class="form-check-input"
+                                       type="checkbox" role="switch" />
+                                <label asp-for="Editar.Estado"
+                                       class="form-check-label small fw-semibold"></label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 px-0 pb-0 mt-3">
+                        <button type="button" class="btn btn-secondary"
+                                data-bs-dismiss="modal">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-primary fw-semibold">
+                            <i class="bi bi-floppy me-1"></i>Actualizar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function cargarEditar(id) {
+            fetch(`/admin/Productos/GetEditar/${id}`)
+                .then(r => r.json())
+                .then(d => {
+                    const f = '#formEditar';
+                    document.querySelector(`${f} [name="Editar.ProductoId"]`).value       = d.productoId;
+                    document.querySelector(`${f} [name="Editar.Codigo"]`).value           = d.codigo;
+                    document.querySelector(`${f} [name="Editar.CodigoBarras"]`).value     = d.codigoBarras    ?? '';
+                    document.querySelector(`${f} [name="Editar.Nombre"]`).value           = d.nombre;
+                    document.querySelector(`${f} [name="Editar.Descripcion"]`).value      = d.descripcion     ?? '';
+                    document.querySelector(`${f} [name="Editar.CategoriaId"]`).value      = d.categoriaId;
+                    document.querySelector(`${f} [name="Editar.ProveedorId"]`).value      = d.proveedorId     ?? '';
+                    document.querySelector(`${f} [name="Editar.UnidadMedida"]`).value     = d.unidadMedida;
+                    document.querySelector(`${f} [name="Editar.PrecioCosto"]`).value      = d.precioCosto;
+                    document.querySelector(`${f} [name="Editar.Precio"]`).value           = d.precio;
+                    document.querySelector(`${f} [name="Editar.PrecioMayorista"]`).value  = d.precioMayorista;
+                    document.querySelector(`${f} [name="Editar.StockMinimo"]`).value      = d.stockMinimo;
+                    document.querySelector(`${f} [name="Editar.StockMaximo"]`).value      = d.stockMaximo;
+                    document.querySelector(`${f} [name="Editar.Peso"]`).value             = d.peso;
+                    document.querySelector(`${f} [name="Editar.Ubicacion"]`).value        = d.ubicacion       ?? '';
+                    document.querySelector(`${f} [name="Editar.FechaVencimiento"]`).value = d.fechaVencimiento
+                        ? d.fechaVencimiento.substring(0, 10) : '';
+                    document.querySelector(`${f} [name="Editar.ImagenPrincipal"]`).value  = d.imagenPrincipal ?? '';
+                    document.querySelector(`${f} [name="Editar.Estado"]`).checked         = d.estado;
+                    new bootstrap.Modal('#modalEditar').show();
+                });
+        }
+
+        @if (TempData["AbrirModalCrear"] != null)
+        {
+                <text>new bootstrap.Modal('#modalCrear').show();</text>
+        }
+        @if (TempData["AbrirModalEditar"] != null)
+        {
+                <text>
+                    document.addEventListener('DOMContentLoaded', () =>
+                        cargarEditar(@TempData["AbrirModalEditar"]));
+                </text>
+        }
+    </script>
+    <partial name="_ValidationScriptsPartial" />
+}

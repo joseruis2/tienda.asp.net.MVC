@@ -1,0 +1,244 @@
+﻿@model TiendaWeb.Areas.almacenero.ViewModel.KardexAlmaceneroIndexViewModel
+@{
+    Layout = "~/Areas/almacenero/Views/Shared/_LayoutAlmacenero.cshtml";
+    ViewData["Title"] = "Movimientos de Inventario";
+}
+
+<link rel="stylesheet" href="~/css/admin/Kardex/index.css" />
+
+<!-- Métricas -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card metric-card p-3">
+            <div class="metric-icon bg-primary-subtle text-primary mb-2">
+                <i class="bi bi-list-ul"></i>
+            </div>
+            <div style="font-size:1.4rem; font-weight:800">
+                @Model.TotalMovimientos
+            </div>
+            <div style="font-size:.78rem; color:#64748b">Movimientos</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card metric-card p-3">
+            <div class="metric-icon bg-success-subtle text-success mb-2">
+                <i class="bi bi-arrow-up-circle"></i>
+            </div>
+            <div style="font-size:1.4rem; font-weight:800; color:#16a34a">
+                +@Model.TotalEntradas.ToString("N3")
+            </div>
+            <div style="font-size:.78rem; color:#64748b">Total entradas</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card metric-card p-3">
+            <div class="metric-icon bg-danger-subtle text-danger mb-2">
+                <i class="bi bi-arrow-down-circle"></i>
+            </div>
+            <div style="font-size:1.4rem; font-weight:800; color:#dc2626">
+                -@Model.TotalSalidas.ToString("N3")
+            </div>
+            <div style="font-size:.78rem; color:#64748b">Total salidas</div>
+        </div>
+    </div>
+</div>
+
+<!-- Filtros -->
+<form method="get" class="card kdx-card p-3 mb-4">
+    <div class="row g-2 align-items-end">
+        <div class="col-md-3">
+            <label class="form-label small fw-semibold">Producto</label>
+            <select name="productoId" class="form-select">
+                <option value="">Todos los productos</option>
+                @foreach (var p in Model.Productos)
+                {
+                    <option value="@p.Id"
+                            selected="@(Model.FiltroProductoId == p.Id.ToString())">
+                        @p.Nombre
+                    </option>
+                }
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label small fw-semibold">Tipo</label>
+            <select name="tipo" class="form-select">
+                <option value="">Todos</option>
+                <option value="ENTRADA" selected="@(Model.FiltroTipo == "ENTRADA")">
+                    ↑ ENTRADA
+                </option>
+                <option value="SALIDA" selected="@(Model.FiltroTipo == "SALIDA")">
+                    ↓ SALIDA
+                </option>
+                <option value="AJUSTE" selected="@(Model.FiltroTipo == "AJUSTE")">
+                    ↔ AJUSTE
+                </option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label small fw-semibold">Origen</label>
+            <select name="origen" class="form-select">
+                <option value="">Todos</option>
+                @foreach (var o in new[]
+                {
+                    "COMPRA","VENTA","AJUSTE_MANUAL","DEVOLUCION","INICIAL"
+                })
+                {
+                    <option value="@o" selected="@(Model.FiltroOrigen == o)">@o</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label small fw-semibold">Fecha</label>
+            <input type="date" name="fecha" class="form-control"
+                   value="@Model.FiltroFecha" />
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn w-100 fw-semibold"
+                    style="background:#10b981; color:#fff">
+                <i class="bi bi-search me-1"></i>Filtrar
+            </button>
+        </div>
+        <div class="col-md-1">
+            <a asp-area="almacenero" asp-controller="Kardex" asp-action="Index"
+               class="btn btn-outline-secondary w-100">
+                <i class="bi bi-x"></i>
+            </a>
+        </div>
+    </div>
+</form>
+
+<!-- Tabla -->
+<div class="card kdx-card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Producto</th>
+                        <th>Tipo</th>
+                        <th>Origen</th>
+                        <th class="text-end text-success">Entrada</th>
+                        <th class="text-end text-danger">Salida</th>
+                        <th class="text-end">Stock ant.</th>
+                        <th class="text-end">Stock result.</th>
+                        <th>Descripción</th>
+                        <th>Usuario</th>
+                        <th>Fecha</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var k in Model.Lista)
+                    {
+                        <tr>
+                            <td class="ps-4">
+                                <div class="fw-semibold" style="font-size:.875rem">
+                                    @k.ProductoNombre
+                                </div>
+                                <div class="text-muted" style="font-size:.72rem">
+                                    @k.ProductoCodigo
+                                </div>
+                            </td>
+                            <td>
+                                @{
+                                    var (tipoClass, tipoIcon) = k.Tipo switch
+                                    {
+                                        "ENTRADA" => ("tipo-entrada", "bi-arrow-up-circle-fill"),
+                                        "SALIDA" => ("tipo-salida", "bi-arrow-down-circle-fill"),
+                                        _ => ("tipo-ajuste", "bi-arrow-left-right")
+                                    };
+                                }
+                                <span class="@tipoClass">
+                                    <i class="bi @tipoIcon me-1"></i>@k.Tipo
+                                </span>
+                            </td>
+                            <td>
+                                @{
+                                    var origenClass = k.Origen switch
+                                    {
+                                        "COMPRA" => "bg-primary-subtle text-primary",
+                                        "VENTA" => "bg-success-subtle text-success",
+                                        "AJUSTE_MANUAL" => "bg-warning-subtle text-warning",
+                                        "DEVOLUCION" => "bg-info-subtle text-info",
+                                        "INICIAL" => "bg-secondary-subtle text-secondary",
+                                        _ => "bg-light text-dark"
+                                    };
+                                }
+                                <span class="badge origen-badge @origenClass">
+                                    @k.Origen
+                                </span>
+                                @if (k.ReferenciaId.HasValue)
+                                {
+                                    <div class="text-muted" style="font-size:.68rem">
+                                        @k.ReferenciaTipo #@k.ReferenciaId
+                                    </div>
+                                }
+                            </td>
+                            <td class="text-end">
+                                @if (k.Entrada > 0)
+                                {
+                                    <span class="fw-bold text-success">
+                                        +@k.Entrada.ToString("N3")
+                                    </span>
+                                }
+                                else
+                                {
+
+                                    <span class="text-muted">—</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                @if (k.Salida > 0)
+                                {
+                                    <span class="fw-bold text-danger">
+                                        -@k.Salida.ToString("N3")
+                                    </span>
+                                }
+                                else
+                                {
+
+                                    <span class="text-muted">—</span>
+                                }
+                            </td>
+                            <td class="text-end text-muted small">
+                                @k.StockAnterior.ToString("N3")
+                            </td>
+                            <td class="text-end">
+                                <span class="fw-bold
+                                    @(k.StockResultante <= 0 ? "text-danger" : "text-success")">
+                                    @k.StockResultante.ToString("N3")
+                                </span>
+                            </td>
+                            <td class="small text-muted" style="max-width:160px">
+                                @k.Descripcion
+                            </td>
+                            <td class="small text-muted">@k.UsuarioNombre</td>
+                            <td class="small text-muted" style="white-space:nowrap">
+                                @k.FechaMovimiento.ToString("dd/MM/yy HH:mm")
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.Lista.Any())
+                    {
+                        <tr>
+                            <td colspan="10" class="text-center text-muted py-5">
+                                <i class="bi bi-inbox me-1"></i>
+                                Sin movimientos registrados
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="px-4 py-2 border-top text-muted small">
+            Mostrando @Model.Lista.Count movimientos
+            @if (!string.IsNullOrEmpty(Model.FiltroFecha))
+            {
+                <span>· Fecha: @Model.FiltroFecha</span>
+            }
+            @if (!string.IsNullOrEmpty(Model.FiltroProductoId))
+            {
+                <span>· Filtrado por producto</span>
+            }
+        </div>
+    </div>
+</div>

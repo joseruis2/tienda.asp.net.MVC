@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\TiendaWeb.csproj": {}
+    "C:\\Users\\PCs\\Desktop\\C#\\TiendaWeb\\TiendaWeb\\TiendaWeb.csproj": {}
   },
   "projects": {
-    "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\TiendaWeb.csproj": {
+    "C:\\Users\\PCs\\Desktop\\C#\\TiendaWeb\\TiendaWeb\\TiendaWeb.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\TiendaWeb.csproj",
+        "projectUniqueName": "C:\\Users\\PCs\\Desktop\\C#\\TiendaWeb\\TiendaWeb\\TiendaWeb.csproj",
         "projectName": "TiendaWeb",
-        "projectPath": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\TiendaWeb.csproj",
+        "projectPath": "C:\\Users\\PCs\\Desktop\\C#\\TiendaWeb\\TiendaWeb\\TiendaWeb.csproj",
         "packagesPath": "C:\\Users\\PCs\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\obj\\",
+        "outputPath": "C:\\Users\\PCs\\Desktop\\C#\\TiendaWeb\\TiendaWeb\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

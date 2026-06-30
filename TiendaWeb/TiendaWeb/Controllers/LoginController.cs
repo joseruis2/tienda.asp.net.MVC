@@ -20,7 +20,7 @@ namespace TiendaWeb.Controllers
         public IActionResult Index()
         {
             if (User.Identity?.IsAuthenticated == true)
-                return RedirectToAction("Index", "Dashboard", new { area = "admin" });
+                return RedirectToRol(User.FindFirst(ClaimTypes.Role)?.Value);
 
             return View();
         }
@@ -65,7 +65,7 @@ namespace TiendaWeb.Controllers
             if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
                 return Redirect(returnUrl);
 
-            return RedirectToAction("Index", "Dashboard", new { area = "admin" });
+            return RedirectToRol(usuario.Rol);
         }
 
         [HttpPost]
@@ -73,9 +73,19 @@ namespace TiendaWeb.Controllers
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            return RedirectToAction("Index", "Login"); // ← redirige al login (raíz)
+            return RedirectToAction("Index", "Login");
         }
 
         public IActionResult AccessDenied() => View();
+
+        // ── Redirigir según rol ──
+        private IActionResult RedirectToRol(string? rol) => rol switch
+        {
+            "ADMIN" => RedirectToAction("Index", "Dashboard", new { area = "admin" }),
+            "ALMACENERO" => RedirectToAction("Index", "Productos", new { area = "almacenero" }),
+            "CAJERO" => RedirectToAction("Index", "Clientes", new { area = "cajero" }),
+            "VENDEDOR" => RedirectToAction("Index", "Dashboard", new { area = "cajero" }),
+            _ => RedirectToAction("Index", "Dashboard", new { area = "admin" })
+        };
     }
 }

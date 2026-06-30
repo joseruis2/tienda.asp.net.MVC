@@ -1,0 +1,385 @@
+﻿@model TiendaWeb.Areas.almacenero.ViewModel.DashboardAlmaceneroViewModel
+@{
+    Layout = "~/Areas/almacenero/Views/Shared/_LayoutAlmacenero.cshtml";
+    ViewData["Title"] = "Dashboard Almacén";
+}
+
+<link rel="stylesheet" href="~/css/admin/Dashboard/index.css" />
+
+<!-- ── Métricas ── -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md col-xl">
+        <div class="card dash-card p-3 h-100">
+            <div class="metric-icon bg-primary-subtle text-primary mb-2">
+                <i class="bi bi-box-seam"></i>
+            </div>
+            <div style="font-size:1.5rem;font-weight:800">@Model.TotalProductos</div>
+            <div style="font-size:.78rem;color:#64748b">Total productos</div>
+        </div>
+    </div>
+    <div class="col-6 col-md col-xl">
+        <div class="card dash-card p-3 h-100
+            @(Model.ProductosSinStock > 0 ? "border-danger" : "")"
+             style="@(Model.ProductosSinStock > 0 ? "border-width:2px!important" : "")">
+            <div class="metric-icon bg-danger-subtle text-danger mb-2">
+                <i class="bi bi-x-circle @(Model.ProductosSinStock > 0 ? "pulse" : "")"></i>
+            </div>
+            <div style="font-size:1.5rem;font-weight:800;color:#dc2626">
+                @Model.ProductosSinStock
+            </div>
+            <div style="font-size:.78rem;color:#64748b">Sin stock</div>
+        </div>
+    </div>
+    <div class="col-6 col-md col-xl">
+        <div class="card dash-card p-3 h-100
+            @(Model.ProductosStockBajo > 0 ? "border-warning" : "")"
+             style="@(Model.ProductosStockBajo > 0 ? "border-width:2px!important" : "")">
+            <div class="metric-icon bg-warning-subtle text-warning mb-2">
+                <i class="bi bi-exclamation-triangle"></i>
+            </div>
+            <div style="font-size:1.5rem;font-weight:800;color:#d97706">
+                @Model.ProductosStockBajo
+            </div>
+            <div style="font-size:.78rem;color:#64748b">Stock bajo</div>
+        </div>
+    </div>
+    <div class="col-6 col-md col-xl">
+        <div class="card dash-card p-3 h-100">
+            <div class="metric-icon mb-2" style="background:#fff7ed">
+                <i class="bi bi-calendar-x" style="color:#ea580c;font-size:1.3rem"></i>
+            </div>
+            <div style="font-size:1.5rem;font-weight:800;color:#ea580c">
+                @Model.ProductosPorVencer
+            </div>
+            <div style="font-size:.78rem;color:#64748b">Por vencer (15d)</div>
+        </div>
+    </div>
+    <div class="col-6 col-md col-xl">
+        <div class="card dash-card p-3 h-100">
+            <div class="metric-icon bg-info-subtle text-info mb-2">
+                <i class="bi bi-truck"></i>
+            </div>
+            <div style="font-size:1.5rem;font-weight:800;color:#0891b2">
+                @Model.ComprasPendientes
+            </div>
+            <div style="font-size:.78rem;color:#64748b">Compras pendientes</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+
+    <!-- ── Columna izquierda ── -->
+    <div class="col-lg-8">
+
+        <!-- Sin stock -->
+        @if (Model.SinStock.Any())
+        {
+            <div class="card dash-card mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <div class="metric-icon bg-danger-subtle text-danger"
+                             style="width:36px;height:36px;font-size:1rem">
+                            <i class="bi bi-x-circle-fill pulse"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0 fw-bold text-danger">Sin Stock</h6>
+                            <span class="text-muted small">
+                                @Model.SinStock.Count producto(s) agotado(s)
+                            </span>
+                        </div>
+                    </div>
+                    @foreach (var p in Model.SinStock)
+                    {
+                        <div class="alerta-row">
+                            <div class="prod-avatar" style="background:#ef4444">
+                                <i class="bi bi-box"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="fw-semibold" style="font-size:.85rem">
+                                    @p.Nombre
+                                </div>
+                                <div class="d-flex align-items-center gap-2 mt-1">
+                                    <span class="text-muted" style="font-size:.72rem">
+                                        @p.Codigo
+                                    </span>
+                                    @if (!string.IsNullOrEmpty(p.CategoriaNombre))
+                                    {
+                                        <span class="badge bg-primary-subtle text-primary"
+                                              style="font-size:.65rem">
+                                            @p.CategoriaNombre
+                                        </span>
+                                    }
+                                    @if (!string.IsNullOrEmpty(p.Ubicacion))
+                                    {
+                                        <span class="badge bg-secondary-subtle text-secondary"
+                                              style="font-size:.65rem">
+                                            <i class="bi bi-geo-alt"></i> @p.Ubicacion
+                                        </span>
+                                    }
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-danger">AGOTADO</span>
+                                @if (!string.IsNullOrEmpty(p.ProveedorNombre))
+                                {
+                                    <div class="text-muted" style="font-size:.7rem">
+                                        @p.ProveedorNombre
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        <!-- Stock bajo -->
+        @if (Model.StockBajo.Any())
+        {
+            <div class="card dash-card mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <div class="metric-icon bg-warning-subtle text-warning"
+                             style="width:36px;height:36px;font-size:1rem">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0 fw-bold text-warning">Stock Bajo</h6>
+                            <span class="text-muted small">
+                                @Model.StockBajo.Count producto(s) por debajo del mínimo
+                            </span>
+                        </div>
+                    </div>
+                    @foreach (var p in Model.StockBajo)
+                    {
+                        <div class="alerta-row">
+                            <div class="prod-avatar" style="background:#f59e0b">
+                                <i class="bi bi-box"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="fw-semibold" style="font-size:.85rem">
+                                    @p.Nombre
+                                </div>
+                                <div class="d-flex align-items-center gap-2 mt-1">
+                                    <div class="stock-bar" style="max-width:100px">
+                                        <div class="stock-fill"
+                                             style="width:@p.PorcentajeStock%;
+                                            background:#f59e0b">
+                                        </div>
+                                    </div>
+                                    <span class="text-muted" style="font-size:.72rem">
+                                        @p.StockActual / @p.StockMaximo @p.UnidadMedida
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <span class="fw-bold text-warning fs-6">
+                                    @p.StockActual
+                                </span>
+                                <div class="text-muted" style="font-size:.7rem">
+                                    mín: @p.StockMinimo
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        <!-- Por vencer -->
+        @if (Model.PorVencer.Any())
+        {
+            <div class="card dash-card mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <div class="metric-icon mb-0"
+                             style="width:36px;height:36px;font-size:1rem;background:#fff7ed">
+                            <i class="bi bi-calendar-x" style="color:#ea580c"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0 fw-bold" style="color:#ea580c">
+                                Próximos a Vencer
+                            </h6>
+                            <span class="text-muted small">
+                                Próximos 15 días
+                            </span>
+                        </div>
+                    </div>
+                    @foreach (var p in Model.PorVencer)
+                    {
+                        <div class="alerta-row">
+                            <div class="prod-avatar"
+                                 style="background:@(p.EsUrgente ? "#ef4444" : "#ea580c")">
+                                <i class="bi bi-calendar"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="fw-semibold" style="font-size:.85rem">
+                                    @p.Nombre
+                                </div>
+                                <div class="text-muted" style="font-size:.72rem">
+                                    Cód: @p.Codigo · Stock: @p.StockActual
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <div class="fw-semibold small">
+                                    @p.FechaVencimiento.ToString("dd/MM/yyyy")
+                                </div>
+                                @if (p.EsVencido)
+                                {
+                                    <span class="badge bg-danger">VENCIDO</span>
+                                }
+                                else if (p.EsUrgente)
+                                {
+                                    <span class="badge bg-danger-subtle text-danger
+                                        @(p.EsUrgente ? "pulse" : "")">
+                                        @p.DiasRestantes día(s)
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning-subtle text-warning">
+                                        @p.DiasRestantes día(s)
+                                    </span>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        <!-- Sin alertas -->
+        @if (!Model.SinStock.Any() && !Model.StockBajo.Any() && !Model.PorVencer.Any())
+        {
+            <div class="card dash-card p-5 text-center mb-4">
+                <i class="bi bi-check-circle-fill text-success d-block mb-2"
+                   style="font-size:3rem"></i>
+                <h6 class="fw-bold text-success">¡Todo en orden!</h6>
+                <p class="text-muted small mb-0">
+                    No hay alertas de stock ni vencimientos próximos.
+                </p>
+            </div>
+        }
+    </div>
+
+    <!-- ── Columna derecha ── -->
+    <div class="col-lg-4">
+
+        <!-- Compras pendientes -->
+        <div class="card dash-card mb-4">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h6 class="mb-0 fw-bold">
+                        <i class="bi bi-truck me-1 text-info"></i>
+                        Compras pendientes
+                    </h6>
+                    <a asp-area="almacenero" asp-controller="Compras" asp-action="Index"
+                       class="btn btn-sm btn-outline-info">Ver todas</a>
+                </div>
+                @if (Model.Compras.Any())
+                {
+                    @foreach (var c in Model.Compras.Take(5))
+                    {
+                        <div class="alerta-row">
+                            <div class="flex-grow-1">
+                                <div class="fw-semibold" style="font-size:.8rem">
+                                    @c.NumeroOrden
+                                </div>
+                                <div class="text-muted" style="font-size:.72rem">
+                                    @c.ProveedorNombre
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge
+                                    @(c.Estado == "PARCIAL"
+                                          ? "bg-info-subtle text-info"
+                                          : "bg-warning-subtle text-warning")">
+                                    @c.Estado
+                                </span>
+                                @if (c.FechaEntrega.HasValue)
+                                {
+                                    <div class="@(c.EsUrgente ? "text-danger fw-semibold" : "text-muted")"
+                                         style="font-size:.7rem">
+                                        @c.FechaEntrega.Value.ToString("dd/MM")
+                                        @(c.EsUrgente ? "⚡" : "")
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="text-center text-muted py-3 small">
+                        <i class="bi bi-check-circle me-1"></i>
+                        Sin compras pendientes
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Últimos movimientos -->
+        <div class="card dash-card">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h6 class="mb-0 fw-bold">
+                        <i class="bi bi-clock-history me-1 text-primary"></i>
+                        Últimos movimientos
+                    </h6>
+                    <a asp-area="almacenero" asp-controller="Kardex" asp-action="Index"
+                       class="btn btn-sm btn-outline-primary">Ver todos</a>
+                </div>
+                @foreach (var m in Model.UltimosMovimientos)
+                {
+                    <div class="alerta-row">
+                        <div>
+                            @if (m.Tipo == "ENTRADA")
+                            {
+                                <i class="bi bi-arrow-up-circle-fill text-success"
+                                   style="font-size:1.2rem"></i>
+                            }
+                            else if (m.Tipo == "SALIDA")
+                            {
+                                <i class="bi bi-arrow-down-circle-fill text-danger"
+                                   style="font-size:1.2rem"></i>
+                            }
+                            else
+                            {
+                                <i class="bi bi-arrow-left-right text-purple"
+                                   style="font-size:1.2rem;color:#7c3aed"></i>
+                            }
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold" style="font-size:.8rem">
+                                @m.ProductoNombre
+                            </div>
+                            <div class="text-muted" style="font-size:.7rem">
+                                @m.Origen · @m.FechaMovimiento.ToString("HH:mm")
+                            </div>
+                        </div>
+                        <div class="text-end" style="font-size:.8rem">
+                            @if (m.Entrada > 0)
+                            {
+                                <span class="text-success fw-bold">+@m.Entrada.ToString("N0")</span>
+                            }
+                            else
+                            {
+                                <span class="text-danger fw-bold">-@m.Salida.ToString("N0")</span>
+                            }
+                            <div class="text-muted" style="font-size:.7rem">
+                                Stock: @m.StockResultante.ToString("N0")
+                            </div>
+                        </div>
+                    </div>
+                }
+                @if (!Model.UltimosMovimientos.Any())
+                {
+                    <div class="text-center text-muted py-3 small">
+                        <i class="bi bi-inbox me-1"></i>Sin movimientos hoy
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

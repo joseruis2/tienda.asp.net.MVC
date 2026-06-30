@@ -23,6 +23,10 @@
   <ItemGroup>
     <Folder Include="Areas\admin\Data\" />
     <Folder Include="Areas\admin\Models\" />
+    <Folder Include="Areas\almacenero\Data\" />
+    <Folder Include="Areas\almacenero\Models\" />
+    <Folder Include="Areas\cajero\Data\" />
+    <Folder Include="Areas\cajero\Models\" />
     <Folder Include="filters\" />
   </ItemGroup>
 

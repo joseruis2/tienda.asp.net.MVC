@@ -1,0 +1,290 @@
+﻿@model TiendaWeb.Areas.almacenero.ViewModel.ComprasAlmaceneroIndexViewModel
+@{
+    Layout = "~/Areas/almacenero/Views/Shared/_LayoutAlmacenero.cshtml";
+    ViewData["Title"] = "Órdenes de Compra";
+}
+
+<link rel="stylesheet" href="~/css/admin/compras/index.css" />
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show mb-4 py-2">
+        <i class="bi bi-check-circle me-1"></i> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show mb-4 py-2">
+        <i class="bi bi-x-circle me-1"></i> @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Header -->
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h5 class="mb-0 fw-bold">Órdenes de Compra</h5>
+        <span class="text-muted small">
+            <span class="text-warning fw-semibold">
+                @Model.CountPendientes pendientes
+            </span>
+            ·
+            <span class="text-info fw-semibold">
+                @Model.CountParciales parciales
+            </span>
+        </span>
+    </div>
+</div>
+
+<!-- Filtro estado -->
+<form method="get" class="card comp-card p-3 mb-4">
+    <div class="d-flex gap-2 align-items-end flex-wrap">
+        <div>
+            <label class="form-label small fw-semibold">Estado</label>
+            <select name="estado" class="form-select form-select-sm"
+                    style="min-width:160px" onchange="this.form.submit()">
+                <option value="">Pendientes y Parciales</option>
+                <option value="PENDIENTE" selected="@(Model.FiltroEstado == "PENDIENTE")">
+                    Solo Pendientes
+                </option>
+                <option value="PARCIAL" selected="@(Model.FiltroEstado == "PARCIAL")">
+                    Solo Parciales
+                </option>
+                <option value="RECIBIDA" selected="@(Model.FiltroEstado == "RECIBIDA")">
+                    Recibidas
+                </option>
+            </select>
+        </div>
+        @if (!string.IsNullOrEmpty(Model.FiltroEstado))
+        {
+            <a asp-area="almacenero" asp-controller="Compras" asp-action="Index"
+               class="btn btn-sm btn-outline-secondary align-self-end">
+                Ver todas
+            </a>
+        }
+    </div>
+</form>
+
+<!-- Tabla -->
+<div class="card comp-card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Orden</th>
+                        <th>Proveedor</th>
+                        <th>Doc. Proveedor</th>
+                        <th>Fecha entrega</th>
+                        <th class="text-end">Total</th>
+                        <th>Estado</th>
+                        <th class="text-center pe-4">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var c in Model.Lista)
+                    {
+                        <tr class="@(c.EsUrgente && c.PuedeRecibir ? "urgente-row" : "")">
+                            <td class="ps-4">
+                                <span class="badge bg-light text-dark border fw-semibold">
+                                    @c.NumeroOrden
+                                </span>
+                                @if (c.EsUrgente && c.PuedeRecibir)
+                                {
+                                    <span class="badge bg-danger ms-1"
+                                          style="font-size:.65rem">
+                                        ⚡ URGENTE
+                                    </span>
+                                }
+                            </td>
+                            <td class="fw-semibold small">@c.ProveedorNombre</td>
+                            <td class="small text-muted">
+                                @(c.TipoDocProveedor ?? "")
+                                @(c.NroDocProveedor != null ? $"· {c.NroDocProveedor}" : "")
+                            </td>
+                            <td>
+                                @if (c.FechaEntrega.HasValue)
+                                {
+                                    var hoy = DateOnly.FromDateTime(DateTime.Now);
+                                    var dias = c.FechaEntrega.Value.DayNumber - hoy.DayNumber;
+                                    <div class="small @(dias <= 0 ? "text-danger fw-bold"
+                                                                                               : dias <= 2 ? "text-warning fw-semibold"
+                                                                                               : "text-muted")">
+                                        @c.FechaEntrega.Value.ToString("dd/MM/yyyy")
+                                        @if (dias == 0)
+                                        {
+                                            <span class="badge bg-warning ms-1">Hoy</span>
+                                        }
+                                        else if (dias < 0)
+                                        {
+
+                                            <span class="badge bg-danger ms-1">Vencida</span>
+                                        }
+                                        else if (dias <= 2)
+                                        {
+
+                                            <span class="badge bg-warning-subtle text-warning ms-1">@dias d</span>
+                                        }
+                                    </div>
+                                }
+                                else
+                                {
+
+                                    <span class="text-muted small">Sin fecha</span>
+                                }
+                            </td>
+                            <td class="text-end fw-semibold">
+                                S/ @c.Total.ToString("N2")
+                            </td>
+                            <td>
+                                @{
+                                    var (bg, txt) = c.Estado switch
+                                    {
+                                        "PENDIENTE" => ("bg-warning-subtle", "text-warning"),
+                                        "PARCIAL" => ("bg-info-subtle", "text-info"),
+                                        "RECIBIDA" => ("bg-success-subtle", "text-success"),
+                                        _ => ("bg-secondary-subtle", "text-secondary")
+                                    };
+                                }
+                                <span class="badge @bg @txt">@c.Estado</span>
+                            </td>
+                            <td class="text-center pe-4">
+                                <button class="btn btn-sm btn-outline-primary me-1"
+                                        onclick="verDetalle(@c.CompraId)"
+                                        title="Ver detalle">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                @if (c.PuedeRecibir)
+                                {
+                                    <a asp-area="almacenero"
+                                       asp-controller="Compras"
+                                       asp-action="Recepcion"
+                                       asp-route-id="@c.CompraId"
+                                       class="btn btn-sm btn-success fw-semibold"
+                                       title="Recibir mercadería">
+                                        <i class="bi bi-box-arrow-in-down me-1"></i>
+                                        Recibir
+                                    </a>
+                                }
+                                else if (c.Estado == "RECIBIDA")
+                                {
+                                    <span class="badge bg-success-subtle text-success">
+                                        <i class="bi bi-check-circle me-1"></i>Completa
+                                    </span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.Lista.Any())
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-5">
+                                <i class="bi bi-truck me-1"></i>
+                                Sin órdenes de compra
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ══ MODAL DETALLE ══ -->
+<div class="modal fade" id="modalDetalle" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h6 class="modal-title fw-bold">
+                    <i class="bi bi-file-text me-1 text-primary"></i>
+                    Detalle — <span id="detOrden"></span>
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="detBody">
+                <div class="text-center py-4">
+                    <div class="spinner-border text-success"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        async function verDetalle(id) {
+            document.getElementById('detBody').innerHTML =
+                '<div class="text-center py-4"><div class="spinner-border text-success"></div></div>';
+            new bootstrap.Modal('#modalDetalle').show();
+
+            const res = await fetch(`/almacenero/Compras/Detalle/${id}`);
+            const d   = await res.json();
+
+            document.getElementById('detOrden').textContent = d.numeroOrden;
+
+            const estadoMap = {
+                PENDIENTE: 'bg-warning-subtle text-warning',
+                PARCIAL  : 'bg-info-subtle text-info',
+                RECIBIDA : 'bg-success-subtle text-success'
+            };
+
+            const itemsHtml = d.items.map(i => `
+                <tr class="${i.estaCompleto ? 'table-success' : ''}">
+                    <td class="fw-semibold">${i.nombreProducto}</td>
+                    <td class="text-center">${i.cantidad}</td>
+                    <td class="text-center fw-semibold text-success">${i.cantidadRecibida}</td>
+                    <td class="text-center ${i.cantidadPendiente > 0
+                        ? 'text-warning fw-semibold' : 'text-muted'}">
+                        ${i.cantidadPendiente > 0 ? i.cantidadPendiente : '✓'}
+                    </td>
+                    <td class="text-end">S/ ${i.precioUnitario.toFixed(2)}</td>
+                    <td class="text-end fw-semibold">S/ ${i.total.toFixed(2)}</td>
+                </tr>
+            `).join('');
+
+            document.getElementById('detBody').innerHTML = `
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <div class="small text-muted">Proveedor</div>
+                        <div class="fw-semibold">${d.proveedorNombre}</div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="small text-muted">Estado</div>
+                        <span class="badge ${estadoMap[d.estado] ?? 'bg-secondary'}">${d.estado}</span>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="small text-muted">Doc. proveedor</div>
+                        <div>${d.tipoDocProveedor ?? '—'} ${d.nroDocProveedor ?? ''}</div>
+                    </div>
+                </div>
+                <table class="table table-sm table-bordered mb-3">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Producto</th>
+                            <th class="text-center">Pedido</th>
+                            <th class="text-center">Recibido</th>
+                            <th class="text-center">Pendiente</th>
+                            <th class="text-end">Precio</th>
+                            <th class="text-end">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>${itemsHtml}</tbody>
+                </table>
+                <div class="row justify-content-end">
+                    <div class="col-md-4">
+                        <div class="d-flex justify-content-between small text-muted">
+                            <span>Subtotal</span><span>S/ ${d.subtotal.toFixed(2)}</span>
+                        </div>
+                        <div class="d-flex justify-content-between small text-muted">
+                            <span>IGV</span><span>S/ ${d.igv.toFixed(2)}</span>
+                        </div>
+                        <div class="d-flex justify-content-between fw-bold border-top pt-1 mt-1">
+                            <span>TOTAL</span><span>S/ ${d.total.toFixed(2)}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+    </script>
+}

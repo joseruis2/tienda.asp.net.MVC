@@ -1,0 +1,262 @@
+﻿@model TiendaWeb.Areas.admin.ViewModel.DevolucionesIndexViewModel
+@{
+    Layout = "~/Areas/admin/Views/Shared/_LayoutAdmin.cshtml";
+    ViewData["Title"] = "Devoluciones";
+}
+
+<link rel="stylesheet" href="~/css/admin/Devoluciones/index.css" />
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show mb-4 py-2">
+        <i class="bi bi-check-circle me-1"></i> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show mb-4 py-2">
+        <i class="bi bi-x-circle me-1"></i> @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Header -->
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h5 class="mb-0 fw-bold">Devoluciones</h5>
+        <span class="text-muted small">
+            @Model.TotalProcesadas procesadas ·
+            <strong class="text-danger">S/ @Model.MontoDevuelto.ToString("N2")</strong>
+            devuelto
+        </span>
+    </div>
+    <a asp-action="Nueva" asp-controller="Devoluciones" asp-area="admin"
+       class="btn btn-primary fw-semibold">
+        <i class="bi bi-arrow-return-left me-1"></i>Nueva devolución
+    </a>
+</div>
+
+<!-- Filtro fecha -->
+<form method="get" class="card dev-card p-3 mb-4">
+    <div class="row g-2 align-items-end">
+        <div class="col-md-3">
+            <label class="form-label small fw-semibold">Fecha</label>
+            <input type="date" name="fecha" class="form-control"
+                   value="@Model.FiltroFecha" />
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="bi bi-search me-1"></i>Filtrar
+            </button>
+        </div>
+        <div class="col-md-2">
+            <a asp-action="Index" asp-area="admin" asp-controller="Devoluciones"
+               class="btn btn-outline-secondary w-100">Limpiar</a>
+        </div>
+    </div>
+</form>
+
+<!-- Tabla -->
+<div class="card dev-card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">N° Devolución</th>
+                        <th>Venta</th>
+                        <th>Cliente</th>
+                        <th>Tipo</th>
+                        <th class="text-end">Total devuelto</th>
+                        <th>Motivo</th>
+                        <th>Estado</th>
+                        <th>Fecha</th>
+                        <th class="text-end pe-4">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var d in Model.Lista)
+                    {
+                        <tr>
+                            <td class="ps-4">
+                                <span class="badge bg-light text-dark border fw-semibold">
+                                    @d.Numero
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-primary-subtle text-primary small">
+                                    @d.NumeroTicket
+                                </span>
+                            </td>
+                            <td class="small">@(d.ClienteNombre ?? "Consumidor Final")</td>
+                            <td>
+                                @{
+                                    var (tipoBg, tipoTxt, tipoIcon) = d.TipoDevolucion switch
+                                    {
+                                        "EFECTIVO" => ("bg-success-subtle", "text-success", "bi-cash"),
+                                        "CAMBIO_PRODUCTO" => ("bg-primary-subtle", "text-primary", "bi-arrow-left-right"),
+                                        "NOTA_CREDITO" => ("bg-warning-subtle", "text-warning", "bi-file-text"),
+                                        _ => ("bg-secondary-subtle", "text-secondary", "bi-tag")
+                                    };
+                                }
+                                <span class="badge @tipoBg @tipoTxt" style="font-size:.7rem">
+                                    <i class="bi @tipoIcon me-1"></i>@d.TipoDevolucion
+                                </span>
+                            </td>
+                            <td class="text-end fw-bold text-danger">
+                                S/ @d.TotalDevuelto.ToString("N2")
+                            </td>
+                            <td class="small text-muted" style="max-width:150px">
+                                @(d.Motivo ?? "—")
+                            </td>
+                            <td>
+                                @if (d.Estado == "PROCESADA")
+                                {
+                                    <span class="badge bg-success-subtle text-success">Procesada</span>
+                                }
+                                else
+                                {
+
+                                    <span class="badge bg-danger-subtle text-danger">Anulada</span>
+                                }
+                            </td>
+                            <td class="small text-muted">
+                                @d.Fecha.ToString("dd/MM/yy HH:mm")
+                            </td>
+                            <td class="text-end pe-4">
+                                <button class="btn btn-sm btn-outline-primary me-1"
+                                        onclick="verDetalle(@d.DevolucionId)">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                @if (d.PuedeAnular)
+                                {
+                                    <form asp-action="Anular" asp-controller="Devoluciones"
+                                          asp-area="admin" method="post" class="d-inline"
+                                          onsubmit="return confirm('¿Anular devolución @d.Numero?')">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@d.DevolucionId" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="bi bi-x-circle"></i>
+                                        </button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.Lista.Any())
+                    {
+                        <tr>
+                            <td colspan="9" class="text-center text-muted py-5">
+                                <i class="bi bi-arrow-return-left me-1"></i>
+                                Sin devoluciones registradas
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ══ MODAL DETALLE ══ -->
+<div class="modal fade" id="modalDetalle" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h6 class="modal-title fw-bold">
+                    <i class="bi bi-arrow-return-left me-1 text-primary"></i>
+                    Detalle — <span id="detNumero"></span>
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="detBody">
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        async function verDetalle(id) {
+            document.getElementById('detBody').innerHTML =
+                '<div class="text-center py-4"><div class="spinner-border text-primary"></div></div>';
+            new bootstrap.Modal('#modalDetalle').show();
+
+            const res = await fetch(`/admin/Devoluciones/Detalle/${id}`);
+            const d   = await res.json();
+
+            document.getElementById('detNumero').textContent = d.numero;
+
+            const itemsHtml = d.items.map(i => `
+                <tr>
+                    <td>${i.nombreProducto}</td>
+                    <td class="text-center">${i.cantidad}</td>
+                    <td class="text-end">S/ ${i.precioUnitario.toFixed(2)}</td>
+                    <td class="text-end fw-semibold text-danger">
+                        S/ ${i.total.toFixed(2)}
+                    </td>
+                    <td class="text-center">
+                        ${i.regresaStock
+                            ? '<span class="badge bg-success-subtle text-success">Sí</span>'
+                            : '<span class="badge bg-secondary-subtle text-secondary">No</span>'}
+                    </td>
+                </tr>
+            `).join('');
+
+            document.getElementById('detBody').innerHTML = `
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <div class="small text-muted">Venta origen</div>
+                        <div class="fw-semibold">${d.numeroTicket}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="small text-muted">Cliente</div>
+                        <div>${d.clienteNombre ?? 'Consumidor Final'}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="small text-muted">Tipo devolución</div>
+                        <div class="fw-semibold">${d.tipoDevolucion}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="small text-muted">Estado</div>
+                        <span class="badge ${d.estado === 'PROCESADA'
+                            ? 'bg-success-subtle text-success'
+                            : 'bg-danger-subtle text-danger'}">
+                            ${d.estado}
+                        </span>
+                    </div>
+                    ${d.motivo ? `
+                    <div class="col-12">
+                        <div class="small text-muted">Motivo</div>
+                        <div>${d.motivo}</div>
+                    </div>` : ''}
+                </div>
+                <table class="table table-sm table-bordered mb-3">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Producto</th>
+                            <th class="text-center">Cantidad</th>
+                            <th class="text-end">Precio</th>
+                            <th class="text-end">Total</th>
+                            <th class="text-center">Regresa stock</th>
+                        </tr>
+                    </thead>
+                    <tbody>${itemsHtml}</tbody>
+                    <tfoot>
+                        <tr class="fw-bold">
+                            <td colspan="3" class="text-end">Total devuelto</td>
+                            <td class="text-end text-danger">
+                                S/ ${d.totalDevuelto.toFixed(2)}
+                            </td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            `;
+        }
+    </script>
+}

@@ -1,0 +1,329 @@
+﻿@model TiendaWeb.Areas.cajero.ViewModel.DashboardCajeroViewModel
+@{
+    Layout = "~/Areas/cajero/Views/Shared/_LayoutCajero.cshtml";
+    ViewData["Title"] = "Dashboard";
+}
+
+<style>
+    .dash-card  { border:none; border-radius:14px; box-shadow:0 1px 6px rgba(0,0,0,.07); }
+    .metric-icon { width:46px; height:46px; border-radius:12px;
+                   display:flex; align-items:center; justify-content:center; font-size:1.3rem; }
+    .metodo-row { display:flex; justify-content:space-between; align-items:center;
+                  padding:.5rem 0; border-bottom:1px solid #f1f5f9; font-size:.85rem; }
+    .metodo-row:last-child { border-bottom:none; }
+</style>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show mb-4 py-2">
+        <i class="bi bi-check-circle me-1"></i> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show mb-4 py-2">
+        <i class="bi bi-x-circle me-1"></i> @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (!Model.TieneSesionAbierta)
+{
+    <!-- ── Sin sesión abierta ── -->
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card dash-card p-5 text-center"
+                 style="border:2px dashed #e2e8f0">
+                <i class="bi bi-cash-register text-muted d-block mb-3"
+                   style="font-size:3rem"></i>
+                <h6 class="fw-bold mb-2">No tienes una caja abierta</h6>
+                <p class="text-muted small mb-4">
+                    Abre una caja para empezar a registrar ventas
+                </p>
+
+                @if (Model.CajasDisponibles.Any())
+                {
+                    <button class="btn fw-semibold px-4 py-2"
+                            style="background:#6366f1; color:#fff"
+                            data-bs-toggle="modal" data-bs-target="#modalAbrir">
+                        <i class="bi bi-unlock me-1"></i>Abrir caja
+                    </button>
+                }
+                else
+                {
+                    <div class="alert alert-warning py-2 small mb-0">
+                        <i class="bi bi-exclamation-triangle me-1"></i>
+                        No hay cajas disponibles. Todas están en uso o deshabilitadas.
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal abrir caja -->
+    <div class="modal fade" id="modalAbrir" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header border-0 pb-0">
+                    <h6 class="modal-title fw-bold">
+                        <i class="bi bi-unlock me-1 text-success"></i>Abrir caja
+                    </h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form asp-action="AbrirCaja" asp-controller="Dashboard"
+                          asp-area="cajero" method="post">
+                        @Html.AntiForgeryToken()
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small">Caja</label>
+                            <select name="CajaId" class="form-select" required>
+                                <option value="">— Seleccionar caja —</option>
+                                @foreach (var c in Model.CajasDisponibles)
+                                {
+                                    <option value="@c.CajaId">
+                                        Caja #@c.Numero — @c.Nombre
+                                    </option>
+                                }
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small">
+                                Monto de apertura
+                            </label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text fw-bold">S/</span>
+                                <input type="number" name="MontoApertura"
+                                       class="form-control" min="0" step="0.01"
+                                       placeholder="0.00" required />
+                            </div>
+                            <div class="form-text">
+                                Dinero físico con el que inicia la caja
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small">
+                                Observaciones
+                            </label>
+                            <textarea name="Observaciones" class="form-control"
+                                      rows="2"></textarea>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-secondary flex-grow-1"
+                                    data-bs-dismiss="modal">
+                                Cancelar
+                            </button>
+                            <button type="submit" class="btn btn-success fw-semibold flex-grow-1">
+                                <i class="bi bi-unlock me-1"></i>Abrir caja
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <!-- ── Con sesión abierta ── -->
+    <!-- Banner estado caja -->
+    <div class="card dash-card mb-4 border-success"
+         style="border-width:2px!important">
+        <div class="card-body p-4">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                <div>
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <span class="badge bg-success px-3 py-2">
+                            <i class="bi bi-circle-fill me-1" style="font-size:.5rem"></i>
+                            CAJA ABIERTA
+                        </span>
+                        <span class="fw-bold">
+                            Caja #@Model.CajaNumero — @Model.CajaNombre
+                        </span>
+                    </div>
+                    <div class="text-muted small">
+                        <i class="bi bi-clock me-1"></i>
+                        Desde: @Model.FechaApertura?.ToString("dd/MM/yyyy HH:mm")
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <div class="text-center">
+                        <div class="text-muted" style="font-size:.7rem">APERTURA</div>
+                        <div class="fw-bold text-primary">
+                            S/ @Model.MontoApertura.ToString("N2")
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-muted" style="font-size:.7rem">EFECTIVO EN CAJA</div>
+                        <div class="fw-bold text-success fs-5">
+                            S/ @Model.EfectivoEnCaja.ToString("N2")
+                        </div>
+                    </div>
+                    <a asp-action="Cierre" asp-controller="Dashboard" asp-area="cajero"
+                       class="btn btn-danger fw-semibold">
+                        <i class="bi bi-lock me-1"></i>Cerrar caja
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Métricas ventas del día -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="card dash-card p-3">
+                <div class="metric-icon bg-primary-subtle text-primary mb-2">
+                    <i class="bi bi-cash-stack"></i>
+                </div>
+                <div style="font-size:1.5rem; font-weight:800; color:#6366f1">
+                    S/ @Model.VentasHoy.ToString("N2")
+                </div>
+                <div style="font-size:.78rem; color:#64748b">Ventas de la sesión</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card dash-card p-3">
+                <div class="metric-icon bg-success-subtle text-success mb-2">
+                    <i class="bi bi-receipt"></i>
+                </div>
+                <div style="font-size:1.5rem; font-weight:800">
+                    @Model.TransaccionesHoy
+                </div>
+                <div style="font-size:.78rem; color:#64748b">Transacciones</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card dash-card p-3">
+                <div class="metric-icon bg-info-subtle text-info mb-2">
+                    <i class="bi bi-graph-up"></i>
+                </div>
+                <div style="font-size:1.5rem; font-weight:800; color:#0891b2">
+                    S/ @(Model.TransaccionesHoy > 0
+                                            ? (Model.VentasHoy / Model.TransaccionesHoy).ToString("N2")
+                                            : "0.00")
+                </div>
+                <div style="font-size:.78rem; color:#64748b">Ticket promedio</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <a asp-area="cajero" asp-controller="Ventas" asp-action="Index"
+               class="text-decoration-none">
+                <div class="card dash-card p-3 h-100"
+                     style="background:#6366f1; color:#fff">
+                    <div class="metric-icon mb-2"
+                         style="background:rgba(255,255,255,.2)">
+                        <i class="bi bi-plus-lg"></i>
+                    </div>
+                    <div style="font-size:1.1rem; font-weight:800">
+                        Nueva venta
+                    </div>
+                    <div style="font-size:.78rem; opacity:.85">
+                        Ir al punto de venta →
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Métodos de pago -->
+        <div class="col-lg-4">
+            <div class="card dash-card">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-3">
+                        <i class="bi bi-wallet2 me-1" style="color:#6366f1"></i>
+                        Por método de pago
+                    </h6>
+                    <div class="metodo-row">
+                        <span><i class="bi bi-cash text-success me-2"></i>Efectivo</span>
+                        <span class="fw-bold">S/ @Model.VentasEfectivo.ToString("N2")</span>
+                    </div>
+                    <div class="metodo-row">
+                        <span><i class="bi bi-credit-card text-primary me-2"></i>Tarjeta</span>
+                        <span class="fw-bold">S/ @Model.VentasTarjeta.ToString("N2")</span>
+                    </div>
+                    <div class="metodo-row">
+                        <span>
+                            <i class="bi bi-phone text-purple me-2"
+                               style="color:#7c3aed"></i>Yape
+                        </span>
+                        <span class="fw-bold">S/ @Model.VentasYape.ToString("N2")</span>
+                    </div>
+                    <div class="metodo-row">
+                        <span><i class="bi bi-phone-flip text-info me-2"></i>Plin</span>
+                        <span class="fw-bold">S/ @Model.VentasPlin.ToString("N2")</span>
+                    </div>
+                    <div class="metodo-row">
+                        <span><i class="bi bi-bank text-warning me-2"></i>Transferencia</span>
+                        <span class="fw-bold">
+                            S/ @Model.VentasTransferencia.ToString("N2")
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Últimas ventas -->
+        <div class="col-lg-8">
+            <div class="card dash-card">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="mb-0 fw-bold">
+                            <i class="bi bi-clock-history me-1" style="color:#6366f1"></i>
+                            Mis últimas ventas
+                        </h6>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Ticket</th>
+                                    <th>Cliente</th>
+                                    <th>Método</th>
+                                    <th class="text-end">Total</th>
+                                    <th>Hora</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var v in Model.UltimasVentas)
+                                {
+                                    <tr>
+                                        <td>
+                                            <span class="badge bg-light text-dark border">
+                                                @v.NumeroTicket
+                                            </span>
+                                        </td>
+                                        <td class="small">
+                                            @(v.ClienteNombre ?? "Consumidor Final")
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-primary-subtle text-primary"
+                                                  style="font-size:.7rem">
+                                                @v.MetodoPago
+                                            </span>
+                                        </td>
+                                        <td class="text-end fw-semibold">
+                                            S/ @v.Total.ToString("N2")
+                                        </td>
+                                        <td class="small text-muted">
+                                            @v.FechaVenta.ToString("HH:mm")
+                                        </td>
+                                    </tr>
+                                }
+                                @if (!Model.UltimasVentas.Any())
+                                {
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted py-4">
+                                            <i class="bi bi-inbox me-1"></i>
+                                            Sin ventas en esta sesión todavía
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}

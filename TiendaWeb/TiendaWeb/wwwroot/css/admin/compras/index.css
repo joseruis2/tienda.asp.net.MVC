@@ -1,0 +1,81 @@
+﻿.comp-card {
+    border: none;
+    border-radius: 14px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.07);
+}
+
+.form-label {
+    font-size: .825rem;
+    font-weight: 600;
+    color: #374151;
+}
+
+.form-control, .form-select {
+    font-size: .875rem;
+    background: #f8fafc;
+    border-color: #e2e8f0;
+}
+
+    .form-control:focus, .form-select:focus {
+        border-color: #1a56db;
+        box-shadow: 0 0 0 3px rgba(26,86,219,.12);
+        background: #fff;
+    }
+
+.section-divider {
+    font-size: .7rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #64748b;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: .4rem;
+    margin-bottom: .75rem;
+}
+/* Orden de compra builder */
+#oc-productos {
+    max-height: 200px;
+    overflow-y: auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fill,minmax(140px,1fr));
+    gap: .5rem;
+}
+
+.oc-tile {
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    padding: .5rem;
+    cursor: pointer;
+    font-size: .78rem;
+    transition: all .15s;
+    background: #fff;
+}
+
+    .oc-tile:hover {
+        border-color: #1a56db;
+        background: #eff6ff;
+    }
+
+    .oc-tile .nombre {
+        font-weight: 600;
+        color: #0f172a;
+    }
+
+    .oc-tile .precio {
+        color: #64748b;
+        font-size: .72rem;
+    }
+
+#oc-items-list {
+    min-height: 80px;
+}
+
+.oc-item-row {
+    display: grid;
+    grid-template-columns: 1fr 90px 100px 80px auto;
+    gap: .4rem;
+    align-items: center;
+    padding: .4rem 0;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: .825rem;
+}

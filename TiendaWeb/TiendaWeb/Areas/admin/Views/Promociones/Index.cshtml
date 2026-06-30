@@ -1,0 +1,554 @@
+﻿@model TiendaWeb.Areas.admin.ViewModel.PromocionesIndexViewModel
+@{
+    Layout = "~/Areas/admin/Views/Shared/_LayoutAdmin.cshtml";
+    ViewData["Title"] = "Promociones";
+}
+
+<link rel="stylesheet" href="~/css/admin/promociones/index.css" />
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show mb-4 py-2">
+        <i class="bi bi-check-circle me-1"></i> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show mb-4 py-2">
+        <i class="bi bi-x-circle me-1"></i> @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Header -->
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h5 class="mb-0 fw-bold">Promociones y Descuentos</h5>
+        <span class="text-muted small">
+            @Model.Lista.Count(p => p.EsVigente) vigentes ·
+            @Model.Lista.Count total
+        </span>
+    </div>
+    <button class="btn btn-primary fw-semibold"
+            data-bs-toggle="modal" data-bs-target="#modalCrear">
+        <i class="bi bi-plus-lg me-1"></i>Nueva promoción
+    </button>
+</div>
+
+<!-- Tabla -->
+<div class="card promo-card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Promoción</th>
+                        <th>Tipo</th>
+                        <th>Valor</th>
+                        <th>Aplica a</th>
+                        <th>Vigencia</th>
+                        <th>Condiciones</th>
+                        <th>Estado</th>
+                        <th class="text-end pe-4">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in Model.Lista)
+                    {
+                        <tr>
+                            <td class="ps-4">
+                                <div class="fw-semibold" style="font-size:.875rem">
+                                    @p.Nombre
+                                </div>
+                                @if (!string.IsNullOrEmpty(p.Descripcion))
+                                {
+                                    <div class="text-muted" style="font-size:.75rem">
+                                        @p.Descripcion
+                                    </div>
+                                }
+                            </td>
+                            <td>
+                                @{
+                                    var (tipoBg, tipoTxt, tipoIcon) = p.Tipo switch
+                                    {
+                                        "PORCENTAJE" => ("bg-primary-subtle", "text-primary", "bi-percent"),
+                                        "MONTO_FIJO" => ("bg-success-subtle", "text-success", "bi-cash"),
+                                        "2X1" => ("bg-warning-subtle", "text-warning", "bi-gift"),
+                                        "COMBO" => ("bg-info-subtle", "text-info", "bi-box-seam"),
+                                        _ => ("bg-secondary-subtle", "text-secondary", "bi-tag")
+                                    };
+                                }
+                                <span class="badge tipo-badge @tipoBg @tipoTxt">
+                                    <i class="bi @tipoIcon me-1"></i>@p.Tipo
+                                </span>
+                            </td>
+                            <td class="fw-bold">
+                                @if (p.Tipo == "PORCENTAJE")
+                                {
+                                    <span class="text-primary">@p.Valor%</span>
+                                }
+                                else if (p.Tipo == "MONTO_FIJO")
+                                {
+
+                                    <span class="text-success">S/ @p.Valor.ToString("N2")</span>
+                                }
+                                else
+                                {
+
+                                    <span class="text-warning">@p.Tipo</span>
+                                }
+                            </td>
+                            <td class="small">
+                                @{
+                                    var aplicaBg = p.AplicaA switch
+                                    {
+                                        "PRODUCTO" => "bg-primary-subtle text-primary",
+                                        "CATEGORIA" => "bg-success-subtle text-success",
+                                        "TODA_VENTA" => "bg-warning-subtle text-warning",
+                                        _ => "bg-secondary-subtle text-secondary"
+                                    };
+                                }
+                                <span class="badge @aplicaBg" style="font-size:.68rem">
+                                    @p.AplicaA
+                                </span>
+                                @if (!string.IsNullOrEmpty(p.ProductoNombre))
+                                {
+                                    <div class="text-muted" style="font-size:.72rem">@p.ProductoNombre</div>
+                                }
+                                @if (!string.IsNullOrEmpty(p.CategoriaNombre))
+                                {
+                                    <div class="text-muted" style="font-size:.72rem">@p.CategoriaNombre</div>
+                                }
+                            </td>
+                            <td class="small">
+                                @if (p.FechaInicio.HasValue || p.FechaFin.HasValue)
+                                {
+                                    <div>
+                                        @(p.FechaInicio?.ToString("dd/MM/yy") ?? "∞")
+                                        →
+                                        @(p.FechaFin?.ToString("dd/MM/yy") ?? "∞")
+                                    </div>
+                                }
+                                @if (p.HoraInicio.HasValue || p.HoraFin.HasValue)
+                                {
+                                    <div class="text-muted" style="font-size:.72rem">
+                                        @(p.HoraInicio?.ToString("HH:mm") ?? "00:00")
+                                        —
+                                        @(p.HoraFin?.ToString("HH:mm") ?? "23:59")
+                                    </div>
+                                }
+                                @if (!p.FechaInicio.HasValue && !p.FechaFin.HasValue)
+                                {
+                                    <span class="text-muted">Sin límite</span>
+                                }
+                            </td>
+                            <td class="small text-muted">
+                                @if (p.MontoMinimo > 0)
+                                {
+                                    <div>Mín. S/ @p.MontoMinimo.ToString("N2")</div>
+                                }
+                                @if (p.CantidadMinima > 1)
+                                {
+                                    <div>Mín. @p.CantidadMinima unid.</div>
+                                }
+                                @if (p.MontoMinimo == 0 && p.CantidadMinima <= 1)
+                                {
+                                    <span>Sin condiciones</span>
+                                }
+                            </td>
+                            <td>
+                                @if (p.EsVigente)
+                                {
+                                    <span class="badge bg-success-subtle text-success">
+                                        <span class="vigente-dot bg-success"></span>Vigente
+                                    </span>
+                                }
+                                else if (p.Estado == true)
+                                {
+                                    <span class="badge bg-warning-subtle text-warning">
+                                        Fuera de rango
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary-subtle text-secondary">
+                                        Inactiva
+                                    </span>
+                                }
+                            </td>
+                            <td class="text-end pe-4">
+                                <button class="btn btn-sm btn-outline-primary me-1"
+                                        onclick="cargarEditar(@p.PromoId)">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <form asp-action="Delete" asp-controller="Promociones"
+                                      asp-area="admin" method="post" class="d-inline"
+                                      onsubmit="return confirm('¿Desactivar @p.Nombre?')">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@p.PromoId" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.Lista.Any())
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center text-muted py-5">
+                                <i class="bi bi-tag me-1"></i>Sin promociones registradas
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ══ MODAL CREAR ══ -->
+<div class="modal fade" id="modalCrear" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h6 class="modal-title fw-bold">
+                    <i class="bi bi-plus-lg me-1 text-primary"></i>Nueva promoción
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form asp-action="Create" asp-controller="Promociones"
+                      asp-area="admin" method="post">
+                    @Html.AntiForgeryToken()
+                    <div class="row g-3">
+
+                        <div class="col-12">
+                            <div class="section-divider">Información básica</div>
+                        </div>
+                        <div class="col-md-8">
+                            <label asp-for="Crear.Nombre" class="form-label"></label>
+                            <input asp-for="Crear.Nombre" class="form-control"
+                                   placeholder="Ej: Descuento verano" />
+                            <span asp-validation-for="Crear.Nombre" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Crear.Tipo" class="form-label"></label>
+                            <select asp-for="Crear.Tipo" class="form-select"
+                                    onchange="toggleValorCrear(this.value)">
+                                <option value="PORCENTAJE">% Porcentaje</option>
+                                <option value="MONTO_FIJO">S/ Monto fijo</option>
+                                <option value="2X1">2x1</option>
+                                <option value="COMBO">Combo</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Crear.Valor" class="form-label"></label>
+                            <div class="input-group">
+                                <span class="input-group-text" id="cPrefijo">%</span>
+                                <input asp-for="Crear.Valor" type="number"
+                                       class="form-control" min="0.01" step="0.01" />
+                            </div>
+                            <span asp-validation-for="Crear.Valor" class="text-danger small"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Crear.Descripcion" class="form-label"></label>
+                            <input asp-for="Crear.Descripcion" class="form-control"
+                                   placeholder="Descripción opcional" />
+                        </div>
+
+                        <div class="col-12">
+                            <div class="section-divider">Alcance</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Crear.AplicaA" class="form-label"></label>
+                            <select asp-for="Crear.AplicaA" class="form-select"
+                                    onchange="toggleAplicaCrear(this.value)">
+                                <option value="PRODUCTO">Producto específico</option>
+                                <option value="CATEGORIA">Categoría</option>
+                                <option value="TODA_VENTA">Toda la venta</option>
+                            </select>
+                        </div>
+                        <div class="col-md-8" id="cDivProducto">
+                            <label asp-for="Crear.ProductoId" class="form-label"></label>
+                            <select asp-for="Crear.ProductoId" class="form-select">
+                                <option value="">— Seleccionar —</option>
+                                @foreach (var p in Model.Productos)
+                                {
+                                    <option value="@p.Id">@p.Nombre</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-8 d-none" id="cDivCategoria">
+                            <label asp-for="Crear.CategoriaId" class="form-label"></label>
+                            <select asp-for="Crear.CategoriaId" class="form-select">
+                                <option value="">— Seleccionar —</option>
+                                @foreach (var c in Model.Categorias)
+                                {
+                                    <option value="@c.Id">@c.Nombre</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="section-divider">Vigencia</div>
+                        </div>
+                        <div class="col-md-3">
+                            <label asp-for="Crear.FechaInicio" class="form-label"></label>
+                            <input asp-for="Crear.FechaInicio" type="date" class="form-control" />
+                        </div>
+                        <div class="col-md-3">
+                            <label asp-for="Crear.FechaFin" class="form-label"></label>
+                            <input asp-for="Crear.FechaFin" type="date" class="form-control" />
+                        </div>
+                        <div class="col-md-3">
+                            <label asp-for="Crear.HoraInicio" class="form-label"></label>
+                            <input asp-for="Crear.HoraInicio" type="time" class="form-control" />
+                        </div>
+                        <div class="col-md-3">
+                            <label asp-for="Crear.HoraFin" class="form-label"></label>
+                            <input asp-for="Crear.HoraFin" type="time" class="form-control" />
+                        </div>
+
+                        <div class="col-12">
+                            <div class="section-divider">Condiciones mínimas</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Crear.MontoMinimo" class="form-label"></label>
+                            <div class="input-group">
+                                <span class="input-group-text">S/</span>
+                                <input asp-for="Crear.MontoMinimo" type="number"
+                                       class="form-control" min="0" step="0.01" />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Crear.CantidadMinima" class="form-label"></label>
+                            <input asp-for="Crear.CantidadMinima" type="number"
+                                   class="form-control" min="1" />
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 px-0 pb-0 mt-3">
+                        <button type="button" class="btn btn-secondary"
+                                data-bs-dismiss="modal">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-primary fw-semibold">
+                            <i class="bi bi-floppy me-1"></i>Guardar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══ MODAL EDITAR ══ -->
+<div class="modal fade" id="modalEditar" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h6 class="modal-title fw-bold">
+                    <i class="bi bi-pencil me-1 text-primary"></i>Editar promoción
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form asp-action="Edit" asp-controller="Promociones"
+                      asp-area="admin" method="post" id="formEditar">
+                    @Html.AntiForgeryToken()
+                    <input asp-for="Editar.PromoId" type="hidden" />
+                    <div class="row g-3">
+
+                        <div class="col-12">
+                            <div class="section-divider">Información básica</div>
+                        </div>
+                        <div class="col-md-8">
+                            <label asp-for="Editar.Nombre" class="form-label"></label>
+                            <input asp-for="Editar.Nombre" class="form-control" />
+                            <span asp-validation-for="Editar.Nombre" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Editar.Tipo" class="form-label"></label>
+                            <select asp-for="Editar.Tipo" class="form-select"
+                                    onchange="toggleValorEditar(this.value)">
+                                <option value="PORCENTAJE">% Porcentaje</option>
+                                <option value="MONTO_FIJO">S/ Monto fijo</option>
+                                <option value="2X1">2x1</option>
+                                <option value="COMBO">Combo</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Editar.Valor" class="form-label"></label>
+                            <div class="input-group">
+                                <span class="input-group-text" id="ePrefijo">%</span>
+                                <input asp-for="Editar.Valor" type="number"
+                                       class="form-control" min="0.01" step="0.01" />
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Editar.Descripcion" class="form-label"></label>
+                            <input asp-for="Editar.Descripcion" class="form-control" />
+                        </div>
+
+                        <div class="col-12">
+                            <div class="section-divider">Alcance</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Editar.AplicaA" class="form-label"></label>
+                            <select asp-for="Editar.AplicaA" class="form-select"
+                                    onchange="toggleAplicaEditar(this.value)">
+                                <option value="PRODUCTO">Producto específico</option>
+                                <option value="CATEGORIA">Categoría</option>
+                                <option value="TODA_VENTA">Toda la venta</option>
+                            </select>
+                        </div>
+                        <div class="col-md-8" id="eDivProducto">
+                            <label asp-for="Editar.ProductoId" class="form-label"></label>
+                            <select asp-for="Editar.ProductoId" class="form-select">
+                                <option value="">— Seleccionar —</option>
+                                @foreach (var p in Model.Productos)
+                                {
+                                    <option value="@p.Id">@p.Nombre</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-8 d-none" id="eDivCategoria">
+                            <label asp-for="Editar.CategoriaId" class="form-label"></label>
+                            <select asp-for="Editar.CategoriaId" class="form-select">
+                                <option value="">— Seleccionar —</option>
+                                @foreach (var c in Model.Categorias)
+                                {
+                                    <option value="@c.Id">@c.Nombre</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="section-divider">Vigencia</div>
+                        </div>
+                        <div class="col-md-3">
+                            <label asp-for="Editar.FechaInicio" class="form-label"></label>
+                            <input asp-for="Editar.FechaInicio" type="date" class="form-control" />
+                        </div>
+                        <div class="col-md-3">
+                            <label asp-for="Editar.FechaFin" class="form-label"></label>
+                            <input asp-for="Editar.FechaFin" type="date" class="form-control" />
+                        </div>
+                        <div class="col-md-3">
+                            <label asp-for="Editar.HoraInicio" class="form-label"></label>
+                            <input asp-for="Editar.HoraInicio" type="time" class="form-control" />
+                        </div>
+                        <div class="col-md-3">
+                            <label asp-for="Editar.HoraFin" class="form-label"></label>
+                            <input asp-for="Editar.HoraFin" type="time" class="form-control" />
+                        </div>
+
+                        <div class="col-12">
+                            <div class="section-divider">Condiciones y estado</div>
+                        </div>
+                        <div class="col-md-5">
+                            <label asp-for="Editar.MontoMinimo" class="form-label"></label>
+                            <div class="input-group">
+                                <span class="input-group-text">S/</span>
+                                <input asp-for="Editar.MontoMinimo" type="number"
+                                       class="form-control" min="0" step="0.01" />
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Editar.CantidadMinima" class="form-label"></label>
+                            <input asp-for="Editar.CantidadMinima" type="number"
+                                   class="form-control" min="1" />
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <div class="form-check form-switch">
+                                <input asp-for="Editar.Estado" class="form-check-input"
+                                       type="checkbox" role="switch" />
+                                <label asp-for="Editar.Estado"
+                                       class="form-check-label small fw-semibold"></label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 px-0 pb-0 mt-3">
+                        <button type="button" class="btn btn-secondary"
+                                data-bs-dismiss="modal">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-primary fw-semibold">
+                            <i class="bi bi-floppy me-1"></i>Actualizar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // ── Toggle valor prefijo ──
+        function toggleValorCrear(tipo) {
+            document.getElementById('cPrefijo').textContent =
+                tipo === 'MONTO_FIJO' ? 'S/' : tipo === 'PORCENTAJE' ? '%' : '#';
+        }
+        function toggleValorEditar(tipo) {
+            document.getElementById('ePrefijo').textContent =
+                tipo === 'MONTO_FIJO' ? 'S/' : tipo === 'PORCENTAJE' ? '%' : '#';
+        }
+
+        // ── Toggle alcance ──
+        function toggleAplicaCrear(val) {
+            document.getElementById('cDivProducto').classList.toggle('d-none',  val !== 'PRODUCTO');
+            document.getElementById('cDivCategoria').classList.toggle('d-none', val !== 'CATEGORIA');
+        }
+        function toggleAplicaEditar(val) {
+            document.getElementById('eDivProducto').classList.toggle('d-none',  val !== 'PRODUCTO');
+            document.getElementById('eDivCategoria').classList.toggle('d-none', val !== 'CATEGORIA');
+        }
+
+        // ── Cargar editar ──
+        function cargarEditar(id) {
+            fetch(`/admin/Promociones/GetEditar/${id}`)
+                .then(r => r.json())
+                .then(d => {
+                    const f = '#formEditar';
+                    document.querySelector(`${f} [name="Editar.PromoId"]`).value        = d.promoId;
+                    document.querySelector(`${f} [name="Editar.Nombre"]`).value         = d.nombre;
+                    document.querySelector(`${f} [name="Editar.Descripcion"]`).value    = d.descripcion   ?? '';
+                    document.querySelector(`${f} [name="Editar.Tipo"]`).value           = d.tipo;
+                    document.querySelector(`${f} [name="Editar.Valor"]`).value          = d.valor;
+                    document.querySelector(`${f} [name="Editar.AplicaA"]`).value        = d.aplicaA;
+                    document.querySelector(`${f} [name="Editar.ProductoId"]`).value     = d.productoId    ?? '';
+                    document.querySelector(`${f} [name="Editar.CategoriaId"]`).value    = d.categoriaId   ?? '';
+                    document.querySelector(`${f} [name="Editar.FechaInicio"]`).value    = d.fechaInicio
+                        ? d.fechaInicio.substring(0,10) : '';
+                    document.querySelector(`${f} [name="Editar.FechaFin"]`).value       = d.fechaFin
+                        ? d.fechaFin.substring(0,10) : '';
+                    document.querySelector(`${f} [name="Editar.HoraInicio"]`).value     = d.horaInicio
+                        ? d.horaInicio.substring(0,5) : '';
+                    document.querySelector(`${f} [name="Editar.HoraFin"]`).value        = d.horaFin
+                        ? d.horaFin.substring(0,5) : '';
+                    document.querySelector(`${f} [name="Editar.MontoMinimo"]`).value    = d.montoMinimo;
+                    document.querySelector(`${f} [name="Editar.CantidadMinima"]`).value = d.cantidadMinima;
+                    document.querySelector(`${f} [name="Editar.Estado"]`).checked       = d.estado;
+
+                    toggleValorEditar(d.tipo);
+                    toggleAplicaEditar(d.aplicaA);
+                    new bootstrap.Modal('#modalEditar').show();
+                });
+        }
+
+        @if (TempData["AbrirModalCrear"] != null)
+        {
+                <text>new bootstrap.Modal('#modalCrear').show();</text>
+        }
+        @if (TempData["AbrirModalEditar"] != null)
+        {
+                <text>
+                    document.addEventListener('DOMContentLoaded', () =>
+                        cargarEditar(@TempData["AbrirModalEditar"]));
+                </text>
+        }
+    </script>
+    <partial name="_ValidationScriptsPartial" />
+}

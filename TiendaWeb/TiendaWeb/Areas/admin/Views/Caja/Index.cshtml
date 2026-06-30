@@ -1,0 +1,242 @@
+﻿@model TiendaWeb.Areas.admin.ViewModel.CajasIndexViewModel
+@{
+    Layout = "~/Areas/admin/Views/Shared/_LayoutAdmin.cshtml";
+    ViewData["Title"] = "Cajas";
+}
+
+<link rel="stylesheet" href="~/css/admin/Caja/index.css" />
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show mb-4 py-2">
+        <i class="bi bi-check-circle me-1"></i> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show mb-4 py-2">
+        <i class="bi bi-x-circle me-1"></i> @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Header -->
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h5 class="mb-0 fw-bold">Cajas</h5>
+        <span class="text-muted small">
+            @Model.Lista.Count cajas —
+            <span class="text-success fw-semibold">
+                @Model.Lista.Count(c => c.EstaAbierta) abiertas
+            </span>
+        </span>
+    </div>
+    <button class="btn btn-primary fw-semibold"
+            data-bs-toggle="modal" data-bs-target="#modalCrear">
+        <i class="bi bi-plus-lg me-1"></i> Nueva caja
+    </button>
+</div>
+
+<!-- Cards de cajas -->
+<div class="row g-3 mb-4">
+    @foreach (var c in Model.Lista)
+    {
+        <div class="col-md-4 col-xl-3">
+            <div class="card caja-card p-3">
+                <div class="d-flex align-items-start gap-3">
+                    <div class="caja-numero">#@c.Numero</div>
+                    <div class="flex-grow-1">
+                        <div class="fw-bold" style="font-size:.9rem">@c.Nombre</div>
+                        <div class="d-flex gap-1 mt-1">
+                            @if (c.EstaAbierta)
+                            {
+                                <span class="badge bg-success-subtle text-success">
+                                    <i class="bi bi-circle-fill me-1" style="font-size:.45rem"></i>Abierta
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary-subtle text-secondary">
+                                    Cerrada
+                                </span>
+                            }
+                            @if (c.Activa == true)
+                            {
+                                <span class="badge bg-primary-subtle text-primary">Habilitada</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger-subtle text-danger">Deshabilitada</span>
+                            }
+                        </div>
+                        @if (c.SesionActual.HasValue)
+                        {
+                            <div class="text-muted mt-1" style="font-size:.72rem">
+                                Sesión #@c.SesionActual
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="d-flex gap-2 mt-3">
+                    <button class="btn btn-sm btn-outline-primary flex-grow-1"
+                            onclick="cargarEditar(@c.CajaId)"
+                        @(c.EstaAbierta ? "disabled title='Caja abierta'" : "")>
+                        <i class="bi bi-pencil me-1"></i>Editar
+                    </button>
+                    <form asp-action="Delete" asp-controller="Caja"
+                          asp-area="admin" method="post"
+                          onsubmit="return confirm('¿Deshabilitar caja @c.Nombre?')">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@c.CajaId" />
+                        <button type="submit" class="btn btn-sm btn-outline-danger"
+                            @(c.EstaAbierta ? "disabled title='Caja abierta'" : "")>
+                            <i class="bi bi-slash-circle"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    }
+    @if (!Model.Lista.Any())
+    {
+        <div class="col-12">
+            <div class="card caja-card p-5 text-center text-muted">
+                <i class="bi bi-cash-register d-block mb-2" style="font-size:2rem"></i>
+                No hay cajas registradas
+            </div>
+        </div>
+    }
+</div>
+
+<!-- ══ MODAL CREAR ══ -->
+<div class="modal fade" id="modalCrear" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h6 class="modal-title fw-bold">
+                    <i class="bi bi-plus-lg me-1 text-primary"></i>Nueva caja
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form asp-action="Create" asp-controller="Caja"
+                      asp-area="admin" method="post">
+                    @Html.AntiForgeryToken()
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label asp-for="Crear.Nombre" class="form-label"></label>
+                            <input asp-for="Crear.Nombre" class="form-control"
+                                   placeholder="Caja Principal" />
+                            <span asp-validation-for="Crear.Nombre" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Crear.Numero" class="form-label"></label>
+                            <input asp-for="Crear.Numero" type="number"
+                                   class="form-control" min="1" max="999" />
+                            <span asp-validation-for="Crear.Numero" class="text-danger small"></span>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check form-switch">
+                                <input asp-for="Crear.Activa" class="form-check-input"
+                                       type="checkbox" role="switch" checked />
+                                <label asp-for="Crear.Activa"
+                                       class="form-check-label small fw-semibold"></label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 px-0 pb-0 mt-3">
+                        <button type="button" class="btn btn-secondary"
+                                data-bs-dismiss="modal">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-primary fw-semibold">
+                            <i class="bi bi-floppy me-1"></i>Guardar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══ MODAL EDITAR ══ -->
+<div class="modal fade" id="modalEditar" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h6 class="modal-title fw-bold">
+                    <i class="bi bi-pencil me-1 text-primary"></i>Editar caja
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form asp-action="Edit" asp-controller="Caja"
+                      asp-area="admin" method="post" id="formEditar">
+                    @Html.AntiForgeryToken()
+                    <input asp-for="Editar.CajaId" type="hidden" />
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label asp-for="Editar.Nombre" class="form-label"></label>
+                            <input asp-for="Editar.Nombre" class="form-control" />
+                            <span asp-validation-for="Editar.Nombre" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Editar.Numero" class="form-label"></label>
+                            <input asp-for="Editar.Numero" type="number"
+                                   class="form-control" min="1" max="999" />
+                            <span asp-validation-for="Editar.Numero" class="text-danger small"></span>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check form-switch">
+                                <input asp-for="Editar.Activa" class="form-check-input"
+                                       type="checkbox" role="switch" />
+                                <label asp-for="Editar.Activa"
+                                       class="form-check-label small fw-semibold"></label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 px-0 pb-0 mt-3">
+                        <button type="button" class="btn btn-secondary"
+                                data-bs-dismiss="modal">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-primary fw-semibold">
+                            <i class="bi bi-floppy me-1"></i>Actualizar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function cargarEditar(id) {
+            fetch(`/admin/Caja/GetEditar/${id}`)
+                .then(r => r.json())
+                .then(d => {
+                    const f = '#formEditar';
+                    document.querySelector(`${f} [name="Editar.CajaId"]`).value  = d.cajaId;
+                    document.querySelector(`${f} [name="Editar.Nombre"]`).value  = d.nombre;
+                    document.querySelector(`${f} [name="Editar.Numero"]`).value  = d.numero;
+                    document.querySelector(`${f} [name="Editar.Activa"]`).checked = d.activa;
+                    new bootstrap.Modal('#modalEditar').show();
+                });
+        }
+
+        @if (TempData["AbrirModalCrear"] != null)
+        {
+                <text>new bootstrap.Modal('#modalCrear').show();</text>
+        }
+        @if (TempData["AbrirModalEditar"] != null)
+        {
+                <text>
+                    document.addEventListener('DOMContentLoaded', () =>
+                        cargarEditar(@TempData["AbrirModalEditar"]));
+                </text>
+        }
+    </script>
+    <partial name="_ValidationScriptsPartial" />
+}

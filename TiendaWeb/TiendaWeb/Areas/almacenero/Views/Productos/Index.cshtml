@@ -1,0 +1,279 @@
+﻿@model TiendaWeb.Areas.almacenero.ViewModel.ProductosAlmaceneroIndexViewModel
+@{
+    Layout = "~/Areas/almacenero/Views/Shared/_LayoutAlmacenero.cshtml";
+    ViewData["Title"] = "Inventario de Productos";
+}
+
+<link rel="stylesheet" href="~/css/admin/Productos/index.css" />
+
+<!-- Métricas -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="card metric-card p-3">
+            <div class="metric-icon bg-primary-subtle text-primary mb-2">
+                <i class="bi bi-box-seam"></i>
+            </div>
+            <div style="font-size:1.5rem; font-weight:800">@Model.TotalProductos</div>
+            <div style="font-size:.78rem; color:#64748b">Total productos</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card metric-card p-3">
+            <div class="metric-icon bg-warning-subtle text-warning mb-2">
+                <i class="bi bi-exclamation-triangle"></i>
+            </div>
+            <div style="font-size:1.5rem; font-weight:800; color:#d97706">
+                @Model.ProductosStockBajo
+            </div>
+            <div style="font-size:.78rem; color:#64748b">Stock bajo</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card metric-card p-3">
+            <div class="metric-icon bg-danger-subtle text-danger mb-2">
+                <i class="bi bi-x-circle"></i>
+            </div>
+            <div style="font-size:1.5rem; font-weight:800; color:#dc2626">
+                @Model.ProductosSinStock
+            </div>
+            <div style="font-size:.78rem; color:#64748b">Sin stock</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card metric-card p-3">
+            <div class="metric-icon bg-orange-subtle text-warning mb-2"
+                 style="background:#fff7ed">
+                <i class="bi bi-calendar-x" style="color:#ea580c"></i>
+            </div>
+            <div style="font-size:1.5rem; font-weight:800; color:#ea580c">
+                @Model.ProductosPorVencer
+            </div>
+            <div style="font-size:.78rem; color:#64748b">Por vencer (7 días)</div>
+        </div>
+    </div>
+</div>
+
+<!-- Filtros -->
+<form method="get" class="card inv-card p-3 mb-4">
+    <div class="row g-2 align-items-end">
+        <div class="col-md-4">
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input type="text" name="busqueda" class="form-control"
+                       placeholder="Nombre, código o código de barras..."
+                       value="@Model.FiltroBusqueda" />
+            </div>
+        </div>
+        <div class="col-md-3">
+            <select name="categoria" class="form-select">
+                <option value="">Todas las categorías</option>
+                @foreach (var c in Model.Categorias)
+                {
+                    <option value="@c" selected="@(Model.FiltroCategoria == c)">@c</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select name="filtroStock" class="form-select">
+                <option value="">Todo el stock</option>
+                <option value="bajo" selected="@(Model.FiltroStock == "bajo")">
+                    ⚠️ Stock bajo
+                </option>
+                <option value="critico" selected="@(Model.FiltroStock == "critico")">
+                    🔴 Sin stock
+                </option>
+                <option value="vencer" selected="@(Model.FiltroStock == "vencer")">
+                    📅 Por vencer
+                </option>
+            </select>
+        </div>
+        <div class="col-md-1">
+            <button type="submit" class="btn w-100"
+                    style="background:#10b981; color:#fff">
+                <i class="bi bi-search"></i>
+            </button>
+        </div>
+        <div class="col-md-1">
+            <a asp-area="almacenero" asp-controller="Productos" asp-action="Index"
+               class="btn btn-outline-secondary w-100">
+                <i class="bi bi-x"></i>
+            </a>
+        </div>
+    </div>
+</form>
+
+<!-- Alertas rápidas -->
+@if (Model.StockCritico.Any())
+{
+    <div class="alert alert-danger py-2 mb-3">
+        <i class="bi bi-x-circle me-1"></i>
+        <strong>@Model.StockCritico.Count producto(s) sin stock:</strong>
+        @string.Join(", ", Model.StockCritico.Take(5).Select(p => p.Nombre))
+        @(Model.StockCritico.Count > 5 ? $" y {Model.StockCritico.Count - 5} más..." : "")
+    </div>
+}
+@if (Model.StockBajo.Any())
+{
+    <div class="alert alert-warning py-2 mb-3">
+        <i class="bi bi-exclamation-triangle me-1"></i>
+        <strong>@Model.StockBajo.Count producto(s) con stock bajo:</strong>
+        @string.Join(", ", Model.StockBajo.Take(5).Select(p => p.Nombre))
+        @(Model.StockBajo.Count > 5 ? $" y {Model.StockBajo.Count - 5} más..." : "")
+    </div>
+}
+
+<!-- Tabla -->
+<div class="card inv-card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Producto</th>
+                        <th>Categoría</th>
+                        <th>Proveedor</th>
+                        <th>Ubicación</th>
+                        <th>Vencimiento</th>
+                        <th style="min-width:200px">Stock</th>
+                        <th class="text-center">Unidad</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in Model.Lista)
+                    {
+                        <tr class="@(p.StockCritico ? "table-danger" : p.StockBajo ? "table-warning" : "")">
+                            <td class="ps-4">
+                                <div class="fw-semibold" style="font-size:.875rem">
+                                    @p.Nombre
+                                </div>
+                                <div class="text-muted" style="font-size:.72rem">
+                                    @p.Codigo
+                                    @if (!string.IsNullOrEmpty(p.CodigoBarras))
+                                    {
+                                        <span class="ms-1">
+                                            <i class="bi bi-upc"></i> @p.CodigoBarras
+                                        </span>
+                                    }
+                                </div>
+                            </td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(p.CategoriaNombre))
+                                {
+                                    <span class="badge bg-primary-subtle text-primary"
+                                          style="font-size:.7rem">
+                                        @p.CategoriaNombre
+                                    </span>
+                                }
+                                else
+                                {
+
+                                    <span class="text-muted small">—</span>
+                                }
+                            </td>
+                            <td class="small text-muted">
+                                @(p.ProveedorNombre ?? "—")
+                            </td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(p.Ubicacion))
+                                {
+                                    <span class="badge bg-secondary-subtle text-secondary">
+                                        <i class="bi bi-geo-alt me-1"></i>@p.Ubicacion
+                                    </span>
+                                }
+                                else
+                                {
+
+                                    <span class="text-muted small">—</span>
+                                }
+                            </td>
+                            <td>
+                                @if (p.FechaVencimiento.HasValue)
+                                {
+                                    var diasRestantes = p.FechaVencimiento.Value
+                                        .DayNumber - DateOnly.FromDateTime(DateTime.Now).DayNumber;
+                                    var vencClass = diasRestantes <= 0 ? "text-danger fw-bold"
+                                                  : diasRestantes <= 7 ? "text-warning fw-semibold"
+                                                  : "text-muted";
+                                    <span class="small @vencClass">
+                                        @p.FechaVencimiento.Value.ToString("dd/MM/yyyy")
+                                        @if (diasRestantes <= 7 && diasRestantes >= 0)
+                                        {
+                                            <span class="badge vencer-badge ms-1">
+                                                @diasRestantes d
+                                            </span>
+                                        }
+                                        else if (diasRestantes < 0)
+                                        {
+                                            <span class="badge bg-danger-subtle text-danger ms-1">
+                                                Vencido
+                                            </span>
+                                        }
+                                    </span>
+                                }
+                                else
+                                {
+
+                                    <span class="text-muted small">—</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div style="min-width:42px; text-align:right">
+                                        @if (p.StockCritico)
+                                        {
+                                            <span class="fw-bold text-danger fs-5">0</span>
+                                        }
+                                        else if (p.StockBajo)
+                                        {
+                                            <span class="fw-bold text-warning fs-6">
+                                                @p.StockActual
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="fw-bold text-success">
+                                                @p.StockActual
+                                            </span>
+                                        }
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="stock-bar">
+                                            <div class="stock-bar-fill"
+                                                 style="width:@p.PorcentajeStock%;
+                                                background:@(p.StockCritico ? "#ef4444"
+                                                                                                                     : p.StockBajo ? "#f59e0b"
+                                                                                                                     : "#10b981")">
+                                            </div>
+                                        </div>
+                                        <div class="d-flex justify-content-between mt-1"
+                                             style="font-size:.65rem; color:#94a3b8">
+                                            <span>Mín: @p.StockMinimo</span>
+                                            <span>Máx: @p.StockMaximo</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-light text-dark border small">
+                                    @p.UnidadMedida
+                                </span>
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.Lista.Any())
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-5">
+                                <i class="bi bi-box-seam me-1"></i>
+                                No se encontraron productos
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="px-4 py-2 border-top text-muted small">
+            Mostrando @Model.Lista.Count productos
+        </div>
+    </div>
+</div>

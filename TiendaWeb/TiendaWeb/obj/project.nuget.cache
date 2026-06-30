@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "Ei88AsEhzBk=",
+  "dgSpecHash": "0xI/Ig1P6jA=",
   "success": true,
-  "projectFilePath": "C:\\Users\\PCs\\Downloads\\C#\\TiendaWeb\\TiendaWeb\\TiendaWeb.csproj",
+  "projectFilePath": "C:\\Users\\PCs\\Desktop\\C#\\TiendaWeb\\TiendaWeb\\TiendaWeb.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\PCs\\.nuget\\packages\\bcrypt.net-next\\3.5.0\\bcrypt.net-next.3.5.0.nupkg.sha512",
     "C:\\Users\\PCs\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",

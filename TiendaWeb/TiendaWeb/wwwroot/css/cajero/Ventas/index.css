@@ -1,0 +1,30 @@
+﻿#btn-cobrar {
+    background: #6366f1 !important;
+    border-color: #6366f1 !important;
+}
+
+.tipo-comp-btn.active {
+    background: #6366f1 !important;
+    border-color: #6366f1 !important;
+    color: #fff !important;
+}
+
+.metodo-btn.selected {
+    border-color: #6366f1 !important;
+    background: #eef2ff !important;
+    color: #6366f1 !important;
+}
+
+#btnConfirmarCobro {
+    background: #6366f1 !important;
+    border-color: #6366f1 !important;
+}
+
+.badge-sesion {
+    background: #6366f1;
+    color: #fff;
+}
+
+.bi-cart3.text-primary, .bi-cash-register.text-primary, .bi-cash-register.me-1.text-primary {
+    color: #6366f1 !important;
+}

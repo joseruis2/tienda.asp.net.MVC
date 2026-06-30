@@ -1,0 +1,179 @@
+﻿@model TiendaWeb.Areas.admin.ViewModel.CerrarCajaViewModel
+@{
+    Layout = "~/Areas/admin/Views/Shared/_LayoutAdmin.cshtml";
+    ViewData["Title"] = "Cierre de Caja";
+}
+
+<style>
+    .cierre-card {
+        border: none;
+        border-radius: 14px;
+        box-shadow: 0 1px 6px rgba(0,0,0,.07);
+    }
+
+    .stat-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: .6rem 0;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: .875rem;
+    }
+
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+
+    .form-label {
+        font-size: .825rem;
+        font-weight: 600;
+        color: #374151;
+    }
+
+    .form-control {
+        font-size: .875rem;
+        background: #f8fafc;
+        border-color: #e2e8f0;
+    }
+
+        .form-control:focus {
+            border-color: #1a56db;
+            box-shadow: 0 0 0 3px rgba(26,86,219,.12);
+            background: #fff;
+        }
+</style>
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+
+        <!-- Info de sesión -->
+        <div class="card cierre-card mb-4">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <i class="bi bi-cash-register text-danger" style="font-size:1.4rem"></i>
+                    <div>
+                        <div class="fw-bold">
+                            Caja #@Model.CajaNumero — @Model.CajaNombre
+                        </div>
+                        <div class="text-muted small">
+                            Abierta: @Model.FechaApertura.ToString("dd/MM/yyyy HH:mm")
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-row">
+                    <span class="text-muted">Monto apertura</span>
+                    <span class="fw-semibold">S/ @Model.MontoApertura.ToString("N2")</span>
+                </div>
+                <div class="stat-row">
+                    <span class="text-muted">Ventas en efectivo</span>
+                    <span class="fw-semibold text-success">
+                        S/ @((Model.MontoSistema - Model.MontoApertura).ToString("N2"))
+                    </span>
+                </div>
+                <div class="stat-row">
+                    <span class="fw-bold">Total esperado (sistema)</span>
+                    <span class="fw-bold text-primary fs-5">
+                        S/ @Model.MontoSistema.ToString("N2")
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulario cierre -->
+        <div class="card cierre-card">
+            <div class="card-body p-4">
+                <h6 class="fw-bold mb-3">
+                    <i class="bi bi-calculator me-1 text-primary"></i>
+                    Conteo físico
+                </h6>
+
+                <form asp-action="Cierre" asp-controller="SesionesCaja"
+                      asp-area="admin" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="SesionId" value="@Model.SesionId" />
+                    <input type="hidden" name="CajaNombre" value="@Model.CajaNombre" />
+                    <input type="hidden" name="CajaNumero" value="@Model.CajaNumero" />
+                    <input type="hidden" name="MontoApertura" value="@Model.MontoApertura" />
+                    <input type="hidden" name="MontoSistema" value="@Model.MontoSistema" />
+                    <input type="hidden" name="FechaApertura" value="@Model.FechaApertura.ToString("o")" />
+
+                    <div class="mb-3">
+                        <label asp-for="MontoCierre" class="form-label"></label>
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text fw-bold">S/</span>
+                            <input asp-for="MontoCierre" type="number" id="montoCierre"
+                                   class="form-control" min="0" step="0.01"
+                                   placeholder="0.00" oninput="calcularDiferencia()" />
+                        </div>
+                        <span asp-validation-for="MontoCierre" class="text-danger small"></span>
+                        <div class="form-text">Dinero físico contado en caja</div>
+                    </div>
+
+                    <!-- Diferencia en tiempo real -->
+                    <div class="p-3 rounded mb-3" id="panelDiferencia"
+                         style="background:#f8fafc; border:1px solid #e2e8f0">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-semibold">Diferencia</span>
+                            <span class="fw-bold fs-5" id="lblDiferencia">S/ 0.00</span>
+                        </div>
+                        <div class="text-muted small mt-1" id="lblEstadoDif">
+                            Ingresa el monto contado
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Observaciones" class="form-label"></label>
+                        <textarea asp-for="Observaciones" class="form-control" rows="2"
+                                  placeholder="Observaciones del cierre..."></textarea>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <a asp-action="Index" asp-controller="SesionesCaja"
+                           asp-area="admin" class="btn btn-secondary flex-grow-1">
+                            Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-danger fw-semibold flex-grow-1">
+                            <i class="bi bi-lock me-1"></i>Confirmar cierre
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const montoSistema = @Model.MontoSistema;
+
+        function calcularDiferencia() {
+            const contado    = parseFloat(document.getElementById('montoCierre').value) || 0;
+            const diferencia = contado - montoSistema;
+            const panel      = document.getElementById('panelDiferencia');
+            const lbl        = document.getElementById('lblDiferencia');
+            const estado     = document.getElementById('lblEstadoDif');
+
+            lbl.textContent = (diferencia >= 0 ? '+' : '') + 'S/ ' + diferencia.toFixed(2);
+
+            if (diferencia === 0) {
+                panel.style.background = '#f0fdf4';
+                panel.style.borderColor = '#86efac';
+                lbl.className = 'fw-bold fs-5 text-success';
+                estado.textContent = '✓ Sin diferencia';
+            } else if (diferencia > 0) {
+                panel.style.background = '#eff6ff';
+                panel.style.borderColor = '#93c5fd';
+                lbl.className = 'fw-bold fs-5 text-info';
+                estado.textContent = `Sobrante de S/ ${diferencia.toFixed(2)}`;
+            } else {
+                panel.style.background = '#fef2f2';
+                panel.style.borderColor = '#fca5a5';
+                lbl.className = 'fw-bold fs-5 text-danger';
+                estado.textContent = `Faltante de S/ ${Math.abs(diferencia).toFixed(2)}`;
+            }
+        }
+    </script>
+    <partial name="_ValidationScriptsPartial" />
+}

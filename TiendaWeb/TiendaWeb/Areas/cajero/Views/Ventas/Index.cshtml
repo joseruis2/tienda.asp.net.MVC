@@ -1,0 +1,454 @@
+﻿@model TiendaWeb.Areas.cajero.ViewModel.PosCajeroViewModel
+@{
+    Layout = "~/Areas/cajero/Views/Shared/_LayoutCajero.cshtml";
+    ViewData["Title"] = "Nueva Venta";
+}
+
+<link rel="stylesheet" href="~/css/admin/ventas/index.css" />
+<link rel="stylesheet" href="~/css/cajero/ventas/index.css" />
+
+
+<div class="d-flex align-items-center justify-content-between mb-2">
+    <span class="badge badge-sesion px-3 py-2">
+        <i class="bi bi-cash-register me-1"></i>
+        Caja #@Model.CajaNumero — @Model.CajaNombre
+    </span>
+</div>
+
+<div id="pos-wrapper">
+
+    <!-- ══ IZQUIERDA: Productos ══ -->
+    <div id="pos-left">
+        <div class="d-flex gap-2">
+            <div id="buscador" class="flex-grow-1">
+                <i class="bi bi-search"></i>
+                <input type="text" id="inputBuscar" class="form-control"
+                       placeholder="Buscar por nombre, código o escanear código de barras..."
+                       autofocus />
+            </div>
+            <select id="selCliente" class="form-select" style="max-width:200px;font-size:.825rem">
+                <option value="">Consumidor Final</option>
+                @foreach (var c in Model.Clientes)
+                {
+                    <option value="@c.Id">@c.Nombre</option>
+                }
+            </select>
+        </div>
+
+        <div class="d-flex gap-2">
+            @foreach (var tc in new[] {
+                ("TICKET",  "T", "bg-primary"),
+                ("BOLETA",  "B", "bg-success"),
+                ("FACTURA", "F", "bg-warning")
+            })
+            {
+                <button class="btn btn-sm btn-outline-secondary tipo-comp-btn fw-semibold"
+                        data-tipo="@tc.Item1"
+                        data-serie="@(tc.Item1 == "TICKET" ? Model.SerieTicket : tc.Item1 == "BOLETA" ? Model.SerieBoleta : Model.SerieFactura)">
+                    @tc.Item1
+                </button>
+            }
+            <span class="ms-auto text-muted small align-self-center">
+                Serie: <strong id="lblSerie">@Model.SerieTicket</strong>
+            </span>
+        </div>
+
+        <div id="lista-productos">
+            @foreach (var p in Model.Productos)
+            {
+                <div class="prod-tile @(p.StockActual == 0 ? "sin-stock" : "")"
+                     data-id="@p.ProductoId"
+                     data-nombre="@p.Nombre"
+                     data-barras="@p.CodigoBarras"
+                     data-codigo="@p.Codigo"
+                     data-precio="@p.Precio.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                     data-stock="@p.StockActual"
+                     onclick="agregarProducto(this)">
+                    <div class="nombre">@p.Nombre</div>
+                    <div class="precio">S/ @p.Precio.ToString("N2")</div>
+                    <div class="stock">Stock: @p.StockActual @p.UnidadMedida</div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- ══ DERECHA: Carrito ══ -->
+    <div id="pos-right">
+        <div class="card border-0 shadow-sm h-100 d-flex flex-column" style="border-radius:14px">
+            <div class="card-body d-flex flex-column p-3 gap-2">
+
+                <div class="d-flex align-items-center justify-content-between">
+                    <span class="fw-bold" style="font-size:.9rem">
+                        <i class="bi bi-cart3 me-1" style="color:#6366f1"></i>Carrito
+                    </span>
+                    <button class="btn btn-sm btn-outline-danger" onclick="limpiarCarrito()">
+                        <i class="bi bi-trash"></i> Limpiar
+                    </button>
+                </div>
+
+                <div id="carrito-items">
+                    <div id="carrito-vacio" class="text-center text-muted py-4" style="font-size:.825rem">
+                        <i class="bi bi-cart d-block mb-1" style="font-size:2rem"></i>
+                        Sin productos
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-2">
+                    <label class="form-label mb-0 small fw-semibold text-muted">Descuento S/</label>
+                    <input type="number" id="inputDescuento" class="form-control form-control-sm"
+                           min="0" step="0.01" value="0" oninput="recalcular()"
+                           style="max-width:100px" />
+                </div>
+
+                <div>
+                    <div class="total-row">
+                        <span class="text-muted">Subtotal</span>
+                        <span id="lblSubtotal">S/ 0.00</span>
+                    </div>
+                    <div class="total-row">
+                        <span class="text-muted">IGV (@(Model.IgvPorcentaje)%)</span>
+                        <span id="lblIgv">S/ 0.00</span>
+                    </div>
+                    <div class="total-row">
+                        <span class="text-muted">Descuento</span>
+                        <span id="lblDescuento" class="text-danger">-S/ 0.00</span>
+                    </div>
+                    <div class="total-row grande">
+                        <span>TOTAL</span>
+                        <span id="lblTotal">S/ 0.00</span>
+                    </div>
+                </div>
+
+                <button id="btn-cobrar" class="btn w-100" style="color:#fff" onclick="abrirCobro()" disabled>
+                    <i class="bi bi-cash-register me-2"></i>COBRAR
+                </button>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══ MODAL COBRO ══ -->
+<div class="modal fade" id="modalCobro" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h6 class="modal-title fw-bold">
+                    <i class="bi bi-cash-register me-1" style="color:#6366f1"></i>Cobro
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-3">
+                    <div class="text-muted small">Total a cobrar</div>
+                    <div class="fw-black" style="font-size:2.5rem; color:#0f172a" id="modalTotal">S/ 0.00</div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold small">Método de pago</label>
+                    <div class="row g-2">
+                        @foreach (var m in new[] {
+                            ("EFECTIVO",      "bi-cash",        "Efectivo"),
+                            ("TARJETA",       "bi-credit-card", "Tarjeta"),
+                            ("YAPE",          "bi-phone",       "Yape"),
+                            ("PLIN",          "bi-phone-flip",  "Plin"),
+                            ("TRANSFERENCIA", "bi-bank",        "Transfer.")
+                        })
+                        {
+                            <div class="col-4 col-md-auto">
+                                <div class="metodo-btn @(m.Item1 == "EFECTIVO" ? "selected" : "")"
+                                     data-metodo="@m.Item1" onclick="seleccionarMetodo(this)">
+                                    <i class="bi @m.Item2"></i>
+                                    @m.Item3
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold small">Monto recibido</label>
+                    <div class="input-group input-group-lg">
+                        <span class="input-group-text fw-bold">S/</span>
+                        <input type="number" id="inputMontoPagado" class="form-control"
+                               min="0" step="0.01" placeholder="0.00" oninput="calcularVuelto()" />
+                    </div>
+                </div>
+
+                <div id="panelVuelto" class="p-3 rounded mb-3 d-none"
+                     style="background:#f0fdf4; border:1px solid #86efac">
+                    <div class="d-flex justify-content-between">
+                        <span class="fw-semibold">Vuelto</span>
+                        <span class="fw-bold text-success fs-5" id="lblVuelto">S/ 0.00</span>
+                    </div>
+                </div>
+
+                <div class="mb-2">
+                    <label class="form-label small fw-semibold">Observaciones</label>
+                    <input type="text" id="inputObs" class="form-control form-control-sm" placeholder="Opcional" />
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn fw-bold px-4" style="color:#fff" id="btnConfirmarCobro" onclick="confirmarVenta()">
+                    <i class="bi bi-check-lg me-1"></i>Confirmar venta
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══ MODAL TICKET ══ -->
+<div class="modal fade" id="modalTicket" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-body text-center p-4">
+                <div class="text-success mb-2" style="font-size:3rem">
+                    <i class="bi bi-check-circle-fill"></i>
+                </div>
+                <h6 class="fw-bold">¡Venta registrada!</h6>
+                <p class="text-muted small mb-1" id="ticketNumero"></p>
+                <p class="text-muted small mb-3" id="ticketVuelto"></p>
+                <button class="btn w-100 mb-2" style="background:#6366f1; color:#fff" onclick="nuevaVenta()">
+                    <i class="bi bi-plus-lg me-1"></i>Nueva venta
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@Html.AntiForgeryToken()
+
+@section Scripts {
+    <script>
+        // ══ Config desde servidor (sin problemas de cultura decimal) ══
+        const _cfg = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(new
+            {
+                    igv = Model.IgvPorcentaje,
+                    serieTicket = Model.SerieTicket,
+                    serieBoleta = Model.SerieBoleta,
+                    serieFactura = Model.SerieFactura
+        }));
+
+        const carrito  = [];
+        const igvPct   = _cfg.igv / 100;
+        let   tipoComp = 'TICKET';
+        let   serie    = _cfg.serieTicket;
+        let   metodo   = 'EFECTIVO';
+
+        // ══ Búsqueda ══
+        const allTiles = [...document.querySelectorAll('.prod-tile')];
+
+        document.getElementById('inputBuscar').addEventListener('input', function () {
+            const q = this.value.toLowerCase().trim();
+            allTiles.forEach(t => {
+                const nombre = t.dataset.nombre.toLowerCase();
+                const codigo = t.dataset.codigo.toLowerCase();
+                const barras = (t.dataset.barras || '').toLowerCase();
+                t.style.display = (!q || nombre.includes(q) || codigo.includes(q) || barras.includes(q))
+                    ? '' : 'none';
+            });
+        });
+
+        // ══ Escáner ══
+        document.getElementById('inputBuscar').addEventListener('keydown', function (e) {
+            if (e.key !== 'Enter') return;
+            const q = this.value.trim();
+            const t = allTiles.find(t => t.dataset.barras === q || t.dataset.codigo === q);
+            if (t) { agregarProducto(t); this.value = ''; }
+        });
+
+        // ══ Tipo comprobante ══
+        document.querySelectorAll('.tipo-comp-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('.tipo-comp-btn')
+                    .forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                tipoComp = this.dataset.tipo;
+                serie    = this.dataset.serie;
+                document.getElementById('lblSerie').textContent = serie;
+            });
+        });
+        document.querySelector('.tipo-comp-btn').click();
+
+        // ══ Agregar producto ══
+        function agregarProducto(tile) {
+            if (tile.classList.contains('sin-stock')) return;
+            const id     = parseInt(tile.dataset.id);
+            const nombre = tile.querySelector('.nombre').textContent.trim();
+            const precio = parseFloat(tile.dataset.precio);
+            const barras = tile.dataset.barras || null;
+            const stock  = parseInt(tile.dataset.stock);
+
+            const existe = carrito.find(i => i.id === id);
+            if (existe) {
+                if (existe.cantidad >= stock) { alert('Stock insuficiente'); return; }
+                existe.cantidad++;
+            } else {
+                carrito.push({ id, nombre, precio, barras, cantidad: 1, descuento: 0, stock });
+            }
+            renderCarrito();
+        }
+
+        // ══ Render carrito ══
+        function renderCarrito() {
+            const cont = document.getElementById('carrito-items');
+
+            if (!carrito.length) {
+                cont.innerHTML = `
+                    <div class="text-center text-muted py-4" style="font-size:.825rem">
+                        <i class="bi bi-cart d-block mb-1" style="font-size:2rem"></i>
+                        Sin productos
+                    </div>`;
+                document.getElementById('btn-cobrar').disabled = true;
+                recalcular();
+                return;
+            }
+
+            cont.innerHTML = carrito.map((item, i) => `
+                <div class="carrito-item">
+                    <div>
+                        <div class="ci-nombre">${item.nombre}</div>
+                        <div class="ci-sub">S/ ${item.precio.toFixed(2)} c/u</div>
+                    </div>
+                    <div style="text-align:right">
+                        <div class="ci-ctrl">
+                            <button onclick="cambiarCant(${i},-1)">−</button>
+                            <span>${item.cantidad}</span>
+                            <button onclick="cambiarCant(${i},1)">+</button>
+                            <button onclick="quitarItem(${i})" style="color:#ef4444">×</button>
+                        </div>
+                        <div class="ci-total">S/ ${(item.precio * item.cantidad).toFixed(2)}</div>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('btn-cobrar').disabled = false;
+            recalcular();
+        }
+
+        function cambiarCant(i, delta) {
+            carrito[i].cantidad += delta;
+            if (carrito[i].cantidad <= 0 || carrito[i].cantidad > carrito[i].stock)
+                carrito[i].cantidad -= delta;
+            renderCarrito();
+        }
+
+        function quitarItem(i) { carrito.splice(i, 1); renderCarrito(); }
+        function limpiarCarrito() { carrito.length = 0; renderCarrito(); }
+
+        // ══ Recalcular totales ══
+        function recalcular() {
+            const bruto    = carrito.reduce((s, i) => s + i.precio * i.cantidad, 0);
+            const desc     = parseFloat(document.getElementById('inputDescuento').value) || 0;
+            const total    = Math.max(0, bruto - desc);
+            const igv      = total - total / (1 + igvPct);
+            const subtotal = total - igv;
+
+            document.getElementById('lblSubtotal').textContent  = `S/ ${subtotal.toFixed(2)}`;
+            document.getElementById('lblIgv').textContent       = `S/ ${igv.toFixed(2)}`;
+            document.getElementById('lblDescuento').textContent = `-S/ ${desc.toFixed(2)}`;
+            document.getElementById('lblTotal').textContent     = `S/ ${total.toFixed(2)}`;
+        }
+
+        // ══ Cobro ══
+        function abrirCobro() {
+            const total = parseFloat(document.getElementById('lblTotal').textContent.replace('S/ ', ''));
+            document.getElementById('modalTotal').textContent = `S/ ${total.toFixed(2)}`;
+            document.getElementById('inputMontoPagado').value = total.toFixed(2);
+            calcularVuelto();
+            new bootstrap.Modal('#modalCobro').show();
+        }
+
+        function seleccionarMetodo(el) {
+            document.querySelectorAll('.metodo-btn').forEach(b => b.classList.remove('selected'));
+            el.classList.add('selected');
+            metodo = el.dataset.metodo;
+            document.getElementById('panelVuelto').classList.toggle('d-none', metodo !== 'EFECTIVO');
+        }
+
+        function calcularVuelto() {
+            const total  = parseFloat(document.getElementById('modalTotal').textContent.replace('S/ ', '')) || 0;
+            const pagado = parseFloat(document.getElementById('inputMontoPagado').value) || 0;
+            const vuelto = Math.max(0, pagado - total);
+            document.getElementById('lblVuelto').textContent = `S/ ${vuelto.toFixed(2)}`;
+            document.getElementById('panelVuelto').classList.toggle('d-none', metodo !== 'EFECTIVO' || vuelto <= 0);
+        }
+
+        // ══ Confirmar venta ══
+        async function confirmarVenta() {
+            const total     = parseFloat(document.getElementById('modalTotal').textContent.replace('S/ ', ''));
+            const pagado    = parseFloat(document.getElementById('inputMontoPagado').value) || 0;
+            const desc      = parseFloat(document.getElementById('inputDescuento').value) || 0;
+            const clienteId = parseInt(document.getElementById('selCliente').value) || null;
+
+            if (metodo === 'EFECTIVO' && pagado < total) {
+                alert('El monto pagado es menor al total.'); return;
+            }
+
+            const btn = document.getElementById('btnConfirmarCobro');
+            btn.disabled  = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Procesando...';
+
+            const payload = {
+                tipoComprobante : tipoComp,
+                serie           : serie,
+                clienteId       : clienteId,
+                clienteNombre   : null,
+                clienteDocumento: null,
+                metodoPago      : metodo,
+                montoPagado     : pagado,
+                descuento       : desc,
+                observaciones   : document.getElementById('inputObs').value || null,
+                items           : carrito.map(i => ({
+                    productoId    : i.id,
+                    nombreProducto: i.nombre,
+                    codigoBarras  : i.barras,
+                    cantidad      : i.cantidad,
+                    precioUnitario: i.precio,
+                    descuento     : 0
+                }))
+            };
+
+            try {
+                const res  = await fetch('/cajero/Ventas/Procesar', {
+                    method : 'POST',
+                    headers: {
+                        'Content-Type'            : 'application/json',
+                        'RequestVerificationToken': document.querySelector(
+                            'input[name="__RequestVerificationToken"]')?.value ?? ''
+                    },
+                    body: JSON.stringify(payload)
+                });
+                const json = await res.json();
+
+                bootstrap.Modal.getInstance('#modalCobro').hide();
+
+                if (json.success) {
+                    const vuelto = Math.max(0, pagado - total);
+                    document.getElementById('ticketNumero').textContent = json.message;
+                    document.getElementById('ticketVuelto').textContent = vuelto > 0
+                        ? `Vuelto: S/ ${vuelto.toFixed(2)}` : '';
+                    new bootstrap.Modal('#modalTicket').show();
+                } else {
+                    alert(json.message);
+                }
+            } catch (err) {
+                alert('Error de conexión: ' + err.message);
+            } finally {
+                btn.disabled  = false;
+                btn.innerHTML = '<i class="bi bi-check-lg me-1"></i>Confirmar venta';
+            }
+        }
+
+        function nuevaVenta() {
+            bootstrap.Modal.getInstance('#modalTicket')?.hide();
+            limpiarCarrito();
+            document.getElementById('inputDescuento').value = '0';
+            document.getElementById('selCliente').value     = '';
+            document.getElementById('inputBuscar').value    = '';
+            document.getElementById('inputBuscar').focus();
+            location.reload();
+        }
+    </script>
+}
